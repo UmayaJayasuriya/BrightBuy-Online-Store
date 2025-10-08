@@ -1,0 +1,77 @@
+/* Contact Page Styles */
+.contact-page .page-header {
+  color: var(--papaya-whip) !important;
+}
+
+.contact-page .page-header h1,
+.contact-page .page-header .breadcrumb-item,
+.contact-page .page-header .breadcrumb-item.active {
+  color: var(--papaya-whip) !important;
+}
+
+.contact-info-card {
+  background: var(--papaya-whip);
+  transition: all 0.3s;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.contact-info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px var(--shadow-color);
+  background: var(--gradient-radial);
+  color: var(--papaya-whip);
+}
+
+.contact-info-card:hover h5 {
+  color: var(--papaya-whip);
+}
+
+.contact-info-card:hover p {
+  color: var(--papaya-whip);
+}
+
+.icon-circle {
+  width: 70px;
+  height: 70px;
+  background: var(--fire-brick);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.contact-info-card:hover .icon-circle {
+  background: var(--papaya-whip);
+}
+
+.contact-info-card:hover .icon-circle i {
+  color: var(--fire-brick) !important;
+}
+
+.icon-circle i {
+  color: var(--papaya-whip) !important;
+}
+
+.map-container {
+  height: 100%;
+  min-height: 450px;
+  border: 2px solid var(--border-color);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Form Enhancements */
+.form-floating .form-control:focus {
+  border-color: var(--fire-brick);
+  box-shadow: 0 0 0 0.25rem rgba(193, 18, 31, 0.25);
+}
+
+.form-floating .form-control {
+  border-color: var(--border-color);
+}
+
+h2 {
+  color: var(--prussian-blue);
+}
