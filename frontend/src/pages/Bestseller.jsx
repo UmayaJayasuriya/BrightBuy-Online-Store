@@ -2,14 +2,77 @@
  * Bestseller Page Component
  * Displays bestselling products
  */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import ProductCard from '../components/common/ProductCard';
-import { getFeaturedProducts } from '../data/products';
+import Spinner from '../components/common/Spinner';
 import './Bestseller.css';
 
 const Bestseller = () => {
-  const bestsellerProducts = getFeaturedProducts();
+  const [bestsellerProducts, setBestsellerProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchBestsellerProducts = async () => {
+      try {
+        setLoading(true);
+        // Fetch products from different categories to get variety
+        const categories = [
+          'Laptops',
+          'Smart Phones',
+          'Headphones & Earphones',
+          'Tablets & E-Readers',
+          'Mouse & Keyboards',
+          'Smart Watches & Wearables',
+          'Cameras',
+          'Gaming Consoles',
+          'Speakers',
+          'Toys & Gadgets'
+        ];
+
+        const allProducts = [];
+        
+        // Fetch 1 product from each category
+        for (const category of categories) {
+          try {
+            const response = await axios.get(`http://127.0.0.1:8020/products/?category_name=${encodeURIComponent(category)}`);
+            if (response.data && response.data.length > 0) {
+              // Get the first product from this category
+              allProducts.push(response.data[0]);
+            }
+          } catch (err) {
+            console.error(`Error fetching products from category ${category}:`, err);
+          }
+        }
+        
+        setBestsellerProducts(allProducts);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching bestseller products:', err);
+        setError('Failed to load bestseller products');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBestsellerProducts();
+  }, []);
+
+  if (loading) {
+    return <Spinner />;
+  }
+
+  if (error) {
+    return (
+      <div className="container py-5">
+        <div className="alert alert-danger text-center">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bestseller-page">
@@ -52,11 +115,17 @@ const Bestseller = () => {
           </div>
 
           <div className="row g-4">
-            {bestsellerProducts.map((product) => (
-              <div key={product.id} className="col-md-6 col-lg-4 col-xl-3">
-                <ProductCard product={product} />
+            {bestsellerProducts.length > 0 ? (
+              bestsellerProducts.map((product) => (
+                <div key={product.product_id} className="col-md-6 col-lg-4 col-xl-3">
+                  <ProductCard product={product} />
+                </div>
+              ))
+            ) : (
+              <div className="col-12 text-center">
+                <p className="text-muted">No bestseller products available at the moment.</p>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Call to Action */}

@@ -14,7 +14,6 @@ import './theme.css'; // New theme colors
 import './assets/css/style.css';
 
 // Layout Components
-import Topbar from './components/layout/Topbar';
 import Header from './components/layout/Header';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -40,7 +39,6 @@ function App() {
         <Router>
           <div className="App">
             <Spinner />
-            <Topbar />
             <Header />
             <Navbar />
           

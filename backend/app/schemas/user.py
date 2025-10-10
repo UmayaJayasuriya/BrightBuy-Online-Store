@@ -27,4 +27,4 @@ class UserOut(BaseModel):
     address_id: Optional[int]
 
     class Config:
-        orm_mode = True
+        from_attributes = True

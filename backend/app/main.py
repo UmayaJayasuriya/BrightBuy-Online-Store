@@ -1,19 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from sqlalchemy import text  # ✅ import this
+from sqlalchemy import text  
 from app.database import SessionLocal
 
 from app.routes import category
 from app.routes import user 
 from app.routes import auth
+from app.routes import product
+from app.routes import contact
 
 app = FastAPI()
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React app URL
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,8 +32,9 @@ def ping_db():
 
 app.include_router(category.router)
 app.include_router(user.router)
-
 app.include_router(auth.router)
+app.include_router(product.router)
+app.include_router(contact.router)
 
 
 

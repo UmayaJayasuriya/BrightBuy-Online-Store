@@ -2,33 +2,49 @@
  * Navbar Component
  * Main navigation menu with category dropdown
  */
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import axios from 'axios';
 import './Navbar.css';
 
 const Navbar = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
 
-  const categories = [
-    { name: 'Smart Phones', count: 4 },
-    { name: 'Mobile Accessories', count: 4 },
-    { name: 'Tablets & E-readers', count: 4 },
-    { name: 'Laptops', count: 4 },
-    { name: 'Mouse & Keyboards', count: 4 },
-    { name: 'Gaming Consoles', count: 4 },
-    { name: 'Smart Watches & Wearables', count: 4 },
-    { name: 'Smart Home Devices', count: 4 },
-    { name: 'Toys & Gadgets', count: 4 },
-    { name: 'Bluetooth Speakers', count: 4 }
-  ];
+  const navRef = useRef(null);
+
+  // Fetch categories from backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8020/categories/');
+        console.log('Categories fetched:', response.data);
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (isCategoryOpen && navRef.current && !navRef.current.contains(e.target)) {
+        setIsCategoryOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isCategoryOpen]);
 
   return (
     <div className="container-fluid nav-bar p-0">
       <div className="row gx-0 bg-primary px-5 align-items-center">
         {/* Categories Sidebar */}
         <div className="col-lg-3 d-none d-lg-block">
-          <nav className="navbar navbar-light position-relative" style={{ width: '250px' }}>
+          <nav ref={navRef} className="navbar navbar-light position-relative" style={{ width: '250px' }}>
             <button
               className="navbar-toggler border-0 fs-4 w-100 px-0 text-start"
               type="button"
@@ -38,16 +54,15 @@ const Navbar = () => {
                 <i className="fa fa-bars me-2"></i>All Categories
               </h4>
             </button>
-            <div className={`collapse navbar-collapse rounded-bottom ${isCategoryOpen ? 'show' : ''}`}>
+            <div className={`collapse navbar-collapse rounded-bottom categories-collapse ${isCategoryOpen ? 'show' : ''}`}>
               <div className="navbar-nav ms-auto py-0">
                 <ul className="list-unstyled categories-bars">
-                  {categories.map((category, index) => (
-                    <li key={index}>
+                  {categories.map((category) => (
+                    <li key={category.category_id}>
                       <div className="categories-bars-item">
-                        <Link to={`/shop?category=${category.name}`}>
-                          {category.name}
+                        <Link to={`/shop?category=${encodeURIComponent(category.category_name)}`}>
+                          {category.category_name}
                         </Link>
-                        <span>({category.count})</span>
                       </div>
                     </li>
                   ))}
@@ -84,9 +99,6 @@ const Navbar = () => {
                 </NavLink>
                 <NavLink to="/shop" className="nav-item nav-link">
                   Shop
-                </NavLink>
-                <NavLink to="/single/1" className="nav-item nav-link">
-                  Single Page
                 </NavLink>
 
                 {/* Pages Dropdown */}
@@ -129,13 +141,12 @@ const Navbar = () => {
                   </a>
                   <div className="dropdown-menu m-0">
                     <ul className="list-unstyled categories-bars">
-                      {categories.map((category, index) => (
-                        <li key={index}>
+                      {categories.map((category) => (
+                        <li key={category.category_id}>
                           <div className="categories-bars-item">
-                            <Link to={`/shop?category=${category.name}`}>
-                              {category.name}
+                            <Link to={`/shop?category=${encodeURIComponent(category.category_name)}`}>
+                              {category.category_name}
                             </Link>
-                            <span>({category.count})</span>
                           </div>
                         </li>
                       ))}

@@ -3,16 +3,17 @@
  * Reusable product card for displaying product information
  */
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
-  const { addToCart, addToWishlist } = useCart();
+  const { addToWishlist } = useCart();
+  const navigate = useNavigate();
 
-  const handleAddToCart = (e) => {
+  const handleViewProduct = (e) => {
     e.preventDefault();
-    addToCart(product);
+    navigate(`/single/${product.product_id}`);
   };
 
   const handleAddToWishlist = (e) => {
@@ -25,18 +26,23 @@ const ProductCard = ({ product }) => {
       <div className="product-item border h-100">
         <div className="position-relative">
           <img
-            src={product.image || '/img/product-1.png'}
+            src={`/img/products/${product.product_id}.png`}
             className="img-fluid w-100"
-            alt={product.name}
+            alt={product.product_name}
+            style={{ height: '250px', objectFit: 'cover', backgroundColor: '#f8f9fa' }}
+            onError={(e) => {
+              // Fallback to .jpg if .png doesn't exist
+              if (e.target.src.endsWith('.png')) {
+                e.target.src = `/img/products/${product.product_id}.jpg`;
+              } else if (e.target.src.endsWith('.jpg')) {
+                // Fallback to placeholder if neither exists
+                e.target.src = '/img/product-1.png';
+              }
+            }}
           />
-          {product.discount && (
-            <div className="product-badge">
-              <span className="badge bg-danger">{product.discount}% OFF</span>
-            </div>
-          )}
           <div className="product-overlay">
             <Link
-              to={`/single/${product.id}`}
+              to={`/single/${product.product_id}`}
               className="btn btn-sm btn-primary rounded-circle"
             >
               <i className="fa fa-eye"></i>
@@ -45,39 +51,35 @@ const ProductCard = ({ product }) => {
         </div>
 
         <div className="product-content p-4">
-          <Link to={`/shop?category=${product.category}`} className="d-block mb-2 text-muted">
-            {product.category}
+          {product.category && (
+            <Link to={`/shop?category=${encodeURIComponent(product.category.category_name)}`} className="d-block mb-2 text-muted small">
+              {product.category.category_name}
+            </Link>
+          )}
+          <Link to={`/single/${product.product_id}`} className="h6 d-block mb-3 text-dark">
+            {product.product_name}
           </Link>
-          <Link to={`/single/${product.id}`} className="h5 d-block mb-3">
-            {product.name}
-          </Link>
 
-          <div className="d-flex align-items-center mb-3">
-            <div className="text-warning me-2">
-              {'★'.repeat(Math.floor(product.rating || 5))}
-              {'☆'.repeat(5 - Math.floor(product.rating || 5))}
-            </div>
-            <small className="text-muted">({product.reviews || 0} reviews)</small>
-          </div>
+          {product.description && (
+            <p className="text-muted small mb-3" style={{ 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis', 
+              display: '-webkit-box', 
+              WebkitLineClamp: 2, 
+              WebkitBoxOrient: 'vertical',
+              minHeight: '40px'
+            }}>
+              {product.description}
+            </p>
+          )}
 
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              {product.oldPrice && (
-                <del className="me-2 text-muted">${product.oldPrice.toFixed(2)}</del>
-              )}
-              <span className="text-primary fw-bold fs-5">
-                ${product.price.toFixed(2)}
-              </span>
-            </div>
-          </div>
-
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-2 mt-3">
             <button
-              onClick={handleAddToCart}
+              onClick={handleViewProduct}
               className="btn btn-primary rounded-pill flex-grow-1"
             >
-              <i className="fas fa-shopping-cart me-2"></i>
-              Add to Cart
+              <i className="fas fa-eye me-2"></i>
+              View Product
             </button>
             <button
               onClick={handleAddToWishlist}

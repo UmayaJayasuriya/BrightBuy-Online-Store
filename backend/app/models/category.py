@@ -1,5 +1,6 @@
 # app/models/category.py
 from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 class Category(Base):
@@ -8,3 +9,6 @@ class Category(Base):
     category_id = Column(Integer, primary_key=True, index=True)
     category_name = Column(String(100))
     parent_category_id = Column(Integer, ForeignKey("category.category_id"), nullable=True)
+    
+    # Relationship to products
+    products = relationship("Product", back_populates="category")

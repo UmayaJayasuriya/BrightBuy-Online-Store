@@ -1,48 +1,104 @@
 /**
  * Single Product Page Component
- * Detailed product view with images, description, and add to cart
+ * Detailed product view with variants, images, description, and add to cart
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import axios from 'axios';
 import { useCart } from '../context/CartContext';
-import { getProductById, products } from '../data/products';
 import ProductCard from '../components/common/ProductCard';
+import Spinner from '../components/common/Spinner';
 import './Single.css';
 
 const Single = () => {
   const { id } = useParams();
-  const product = getProductById(id);
   const { addToCart, addToWishlist } = useCart();
+  const [productData, setProductData] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(0);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  if (!product) {
+  // Fetch product with variants
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        // Fetch product with variants
+        const response = await axios.get(`http://127.0.0.1:8020/products/${id}/variants/`);
+        setProductData(response.data);
+        
+        // Set first variant as selected by default
+        if (response.data.variants && response.data.variants.length > 0) {
+          setSelectedVariant(response.data.variants[0]);
+        }
+
+        // Fetch related products (from same category)
+        if (response.data.category) {
+          const relatedResponse = await axios.get(
+            `http://127.0.0.1:8020/products/?category_name=${encodeURIComponent(response.data.category.category_name)}`
+          );
+          // Filter out current product and take first 4
+          const related = relatedResponse.data.filter(p => p.product_id !== parseInt(id)).slice(0, 4);
+          setRelatedProducts(related);
+        }
+      } catch (err) {
+        console.error('Error fetching product:', err);
+        setError('Failed to load product. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
+
+  const handleAddToCart = () => {
+    if (selectedVariant) {
+      addToCart({
+        ...productData,
+        ...selectedVariant,
+        name: `${productData.product_name} - ${selectedVariant.variant_name}`
+      }, quantity);
+    }
+  };
+
+  const handleQuantityChange = (delta) => {
+    const newQuantity = quantity + delta;
+    if (newQuantity >= 1 && newQuantity <= (selectedVariant?.quantity || 1)) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const handleVariantSelect = (variant) => {
+    setSelectedVariant(variant);
+    setQuantity(1); // Reset quantity when changing variant
+  };
+
+  if (loading) {
+    return (
+      <div className="container py-5">
+        <div className="text-center">
+          <Spinner />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !productData) {
     return (
       <div className="container py-5 text-center">
-        <h2>Product not found</h2>
+        <h2>{error || 'Product not found'}</h2>
         <Link to="/shop" className="btn btn-primary mt-3">
           Back to Shop
         </Link>
       </div>
     );
   }
-
-  const relatedProducts = products.filter(
-    (p) => p.category === product.category && p.id !== product.id
-  ).slice(0, 4);
-
-  const handleAddToCart = () => {
-    addToCart(product, quantity);
-  };
-
-  const handleQuantityChange = (delta) => {
-    const newQuantity = quantity + delta;
-    if (newQuantity >= 1) {
-      setQuantity(newQuantity);
-    }
-  };
-
-  const productImages = [product.image, product.image, product.image]; // Mock multiple images
 
   return (
     <div className="single-page">
@@ -64,12 +120,12 @@ const Single = () => {
           zIndex: 1
         }}></div>
         <div className="container text-center py-5" style={{ position: 'relative', zIndex: 2 }}>
-          <h1 className="display-4 text-white mb-3" style={{ fontWeight: '700' }}>Single Product</h1>
+          <h1 className="display-4 text-white mb-3" style={{ fontWeight: '700' }}>{productData.product_name}</h1>
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb justify-content-center mb-0">
               <li className="breadcrumb-item"><Link to="/">Home</Link></li>
-              <li className="breadcrumb-item"><Link to="/shop">Pages</Link></li>
-              <li className="breadcrumb-item active text-white">Single Product</li>
+              <li className="breadcrumb-item"><Link to="/shop">Shop</Link></li>
+              <li className="breadcrumb-item active text-white">{productData.product_name}</li>
             </ol>
           </nav>
         </div>
@@ -79,144 +135,180 @@ const Single = () => {
       <div className="container-fluid py-5">
         <div className="container py-5">
           <div className="row g-4 mb-5">
-            {/* Product Images */}
+            {/* Product Image */}
             <div className="col-lg-6">
               <div className="product-images">
                 <div className="main-image mb-3">
                   <img
-                    src={productImages[selectedImage]}
+                    src={selectedVariant ? `/img/variants/${selectedVariant.variant_id}.png` : `/img/products/${productData.product_id}.png`}
                     className="img-fluid rounded"
-                    alt={product.name}
+                    alt={selectedVariant?.variant_name || productData.product_name}
+                    style={{ width: '100%', height: '350px', objectFit: 'contain', backgroundColor: '#f8f9fa', padding: '20px' }}
+                    onError={(e) => {
+                      if (e.target.src.endsWith('.png')) {
+                        e.target.src = selectedVariant ? `/img/variants/${selectedVariant.variant_id}.jpg` : `/img/products/${productData.product_id}.jpg`;
+                      } else {
+                        e.target.src = '/img/product-1.png';
+                      }
+                    }}
                   />
                 </div>
-                <div className="image-thumbnails d-flex gap-2">
-                  {productImages.map((img, index) => (
-                    <img
-                      key={index}
-                      src={img}
-                      className={`img-thumbnail cursor-pointer ${
-                        selectedImage === index ? 'border-primary' : ''
-                      }`}
-                      style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                      alt={`${product.name} ${index + 1}`}
-                      onClick={() => setSelectedImage(index)}
-                    />
-                  ))}
-                </div>
+                
+                {/* Variant Thumbnails */}
+                {productData.variants && productData.variants.length > 0 && (
+                  <div className="variant-thumbnails d-flex gap-3 justify-content-center flex-wrap">
+                    {productData.variants.map((variant) => (
+                      <div
+                        key={variant.variant_id}
+                        className={`variant-thumbnail ${
+                          selectedVariant?.variant_id === variant.variant_id ? 'border-primary border-3' : 'border'
+                        }`}
+                        style={{
+                          width: '150px',
+                          height: '150px',
+                          cursor: 'pointer',
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onClick={() => handleVariantSelect(variant)}
+                      >
+                        <img
+                          src={`/img/variants/${variant.variant_id}.png`}
+                          className="img-fluid w-100 h-100"
+                          alt={variant.variant_name}
+                          style={{ objectFit: 'contain', backgroundColor: '#f8f9fa', padding: '10px' }}
+                          onError={(e) => {
+                            if (e.target.src.endsWith('.png')) {
+                              e.target.src = `/img/variants/${variant.variant_id}.jpg`;
+                            } else {
+                              e.target.src = '/img/product-1.png';
+                            }
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Product Info */}
             <div className="col-lg-6">
               <div className="product-details">
-                <h2 className="mb-3">{product.name}</h2>
+                <h2 className="mb-3">{productData.product_name}</h2>
                 
-                {/* Rating */}
-                <div className="d-flex align-items-center mb-3">
-                  <div className="text-warning me-2">
-                    {'★'.repeat(Math.floor(product.rating))}
-                    {'☆'.repeat(5 - Math.floor(product.rating))}
+                {selectedVariant && (
+                  <div className="mb-3">
+                    <h5 className="text-primary">{selectedVariant.variant_name}</h5>
                   </div>
-                  <span className="text-muted">({product.reviews} reviews)</span>
-                </div>
+                )}
 
-                {/* Price */}
-                <div className="mb-4">
-                  {product.oldPrice && (
-                    <del className="me-3 text-muted fs-4">${product.oldPrice.toFixed(2)}</del>
-                  )}
-                  <span className="text-primary fw-bold fs-2">${product.price.toFixed(2)}</span>
-                  {product.discount && (
-                    <span className="badge bg-danger ms-3">{product.discount}% OFF</span>
-                  )}
-                </div>
+                {/* Price & SKU */}
+                {selectedVariant && (
+                  <div className="mb-4">
+                    <div className="d-flex align-items-center gap-3 mb-2">
+                      <span className="text-primary fw-bold fs-2">
+                        ${parseFloat(selectedVariant.price).toFixed(2)}
+                      </span>
+                    </div>
+                    <p className="text-muted mb-0">
+                      <strong>SKU:</strong> {selectedVariant.SKU}
+                    </p>
+                  </div>
+                )}
+
+                {/* Variant Attributes */}
+                {selectedVariant && selectedVariant.attributes && selectedVariant.attributes.length > 0 && (
+                  <div className="mb-4">
+                    <h5>Specifications:</h5>
+                    <div className="table-responsive">
+                      <table className="table table-borderless">
+                        <tbody>
+                          {selectedVariant.attributes.map((attr, index) => (
+                            <tr key={index}>
+                              <td className="fw-bold" style={{ width: '40%' }}>{attr.attribute_name}:</td>
+                              <td>{attr.value}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
 
                 {/* Description */}
-                <p className="mb-4">{product.description}</p>
-
-                {/* Features */}
-                <div className="mb-4">
-                  <h5>Key Features:</h5>
-                  <ul>
-                    {product.features.map((feature, index) => (
-                      <li key={index}>{feature}</li>
-                    ))}
-                  </ul>
-                </div>
+                {productData.description && (
+                  <div className="mb-4">
+                    <h5>Description:</h5>
+                    <p>{productData.description}</p>
+                  </div>
+                )}
 
                 {/* Category & Stock */}
                 <div className="mb-4">
-                  <p className="mb-2">
-                    <strong>Category:</strong>{' '}
-                    <Link to={`/shop?category=${product.category}`}>{product.category}</Link>
-                  </p>
-                  <p className="mb-0">
-                    <strong>Availability:</strong>{' '}
-                    <span className={product.inStock ? 'text-success' : 'text-danger'}>
-                      {product.inStock ? 'In Stock' : 'Out of Stock'}
-                    </span>
-                  </p>
+                  {productData.category && (
+                    <p className="mb-2">
+                      <strong>Category:</strong>{' '}
+                      <span className="text-capitalize">{productData.category.category_name}</span>
+                    </p>
+                  )}
+                  {selectedVariant && (
+                    <p className="mb-0">
+                      <strong>Availability:</strong>{' '}
+                      <span className={selectedVariant.quantity > 0 ? 'text-success' : 'text-danger'}>
+                        {selectedVariant.quantity > 0 ? `In Stock (${selectedVariant.quantity} available)` : 'Out of Stock'}
+                      </span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Quantity Selector */}
-                <div className="quantity-selector mb-4">
-                  <label className="mb-2"><strong>Quantity:</strong></label>
-                  <div className="d-flex align-items-center gap-3">
-                    <div className="input-group" style={{ width: '150px' }}>
-                      <button
-                        className="btn btn-outline-secondary"
-                        onClick={() => handleQuantityChange(-1)}
-                      >
-                        <i className="fas fa-minus"></i>
-                      </button>
-                      <input
-                        type="number"
-                        className="form-control text-center"
-                        value={quantity}
-                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                      />
-                      <button
-                        className="btn btn-outline-secondary"
-                        onClick={() => handleQuantityChange(1)}
-                      >
-                        <i className="fas fa-plus"></i>
-                      </button>
+                {selectedVariant && selectedVariant.quantity > 0 && (
+                  <div className="quantity-selector mb-4">
+                    <label className="mb-2"><strong>Quantity:</strong></label>
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="input-group" style={{ width: '150px' }}>
+                        <button
+                          className="btn btn-outline-secondary"
+                          onClick={() => handleQuantityChange(-1)}
+                          disabled={quantity <= 1}
+                        >
+                          <i className="fas fa-minus"></i>
+                        </button>
+                        <input
+                          type="number"
+                          className="form-control text-center"
+                          value={quantity}
+                          min="1"
+                          max={selectedVariant.quantity}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 1;
+                            setQuantity(Math.min(Math.max(1, val), selectedVariant.quantity));
+                          }}
+                        />
+                        <button
+                          className="btn btn-outline-secondary"
+                          onClick={() => handleQuantityChange(1)}
+                          disabled={quantity >= selectedVariant.quantity}
+                        >
+                          <i className="fas fa-plus"></i>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="d-flex gap-3 mb-4">
                   <button
                     className="btn btn-primary btn-lg flex-grow-1"
                     onClick={handleAddToCart}
-                    disabled={!product.inStock}
+                    disabled={!selectedVariant || selectedVariant.quantity === 0}
                   >
                     <i className="fas fa-shopping-cart me-2"></i>
-                    Add to Cart
+                    {selectedVariant && selectedVariant.quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
                   </button>
-                  <button
-                    className="btn btn-outline-primary btn-lg"
-                    onClick={() => addToWishlist(product)}
-                  >
-                    <i className="fas fa-heart"></i>
-                  </button>
-                </div>
-
-                {/* Social Share */}
-                <div className="social-share">
-                  <strong>Share:</strong>
-                  <div className="d-inline-flex gap-2 ms-3">
-                    <a href="#facebook" className="btn btn-sm btn-outline-primary rounded-circle">
-                      <i className="fab fa-facebook-f"></i>
-                    </a>
-                    <a href="#twitter" className="btn btn-sm btn-outline-info rounded-circle">
-                      <i className="fab fa-twitter"></i>
-                    </a>
-                    <a href="#pinterest" className="btn btn-sm btn-outline-danger rounded-circle">
-                      <i className="fab fa-pinterest"></i>
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>
@@ -228,7 +320,7 @@ const Single = () => {
               <h3 className="mb-4">Related Products</h3>
               <div className="row g-4">
                 {relatedProducts.map((relatedProduct) => (
-                  <div key={relatedProduct.id} className="col-md-6 col-lg-3">
+                  <div key={relatedProduct.product_id} className="col-md-6 col-lg-3">
                     <ProductCard product={relatedProduct} />
                   </div>
                 ))}

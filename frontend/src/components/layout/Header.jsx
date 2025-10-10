@@ -55,7 +55,7 @@ const Header = () => {
             <Link to="/" className="navbar-brand p-0">
               <h1 className="display-5 text-primary m-0">
                 <i className="fa-solid fa-shopping-bag text-secondary me-2"></i>
-                Electro
+                BrightBuy
               </h1>
             </Link>
           </div>
@@ -78,11 +78,17 @@ const Header = () => {
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
-                <option value="All Category">All Category</option>
-                <option value="Category 1">Category 1</option>
-                <option value="Category 2">Category 2</option>
-                <option value="Category 3">Category 3</option>
-                <option value="Category 4">Category 4</option>
+                <option value="All Categories">All Categories</option>
+                <option value="Smartphones">Smartphones</option>
+                <option value="Mobile Accessories">Mobile Accessories</option>
+                <option value="Tablets & E-readers">Tablets & E-readers</option>
+                <option value="Laptops">Laptops</option>
+                <option value="Mouse & Keyboards">Mouse & Keyboards</option>
+                <option value="Gaming Consoles">Gaming Consoles</option>
+                <option value="Smart Watches & Wearables">Smart Watches & Wearables</option>
+                <option value="Smart Home Devices">Smart Home Devices</option>
+                <option value="Toys & Gadgets">Toys & Gadgets</option>
+                <option value="Bluetooth Speakers">Bluetooth Speakers</option>
               </select>
               <button
                 type="submit"
@@ -100,26 +106,24 @@ const Header = () => {
           <div className="d-inline-flex align-items-center">
             {/* (removed unused compare button) */}
 
-            {/* Wishlist Icon */}
+            {/* Login Oval Button */}
             <button
               onClick={handleWishlistClick}
-              className="text-muted d-flex align-items-center justify-content-center me-3 bg-transparent border-0"
-              title={isAuthenticated ? "Go to Wishlist" : "Login to access Wishlist"}
+              className="login-oval me-3"
+              title="Login"
+              aria-label="Login"
             >
-              <span className="rounded-circle btn-md-square border d-flex align-items-center justify-content-center" style={{ width: '45px', height: '45px' }}>
-                <i className={`fa-solid fa-heart ${isAuthenticated ? 'text-danger' : ''}`}></i>
-              </span>
+              Login
             </button>
 
-            {/* Share/Sign Up Icon (moved between wishlist and cart) */}
+            {/* Sign-up Oval Button */}
             <button
               onClick={() => setIsSignUpOpen(true)}
-              className="text-muted d-flex align-items-center justify-content-center me-3 bg-transparent border-0"
+              className="signup-oval me-3"
               title="Sign up"
+              aria-label="Sign up"
             >
-              <span className="rounded-circle btn-md-square border d-flex align-items-center justify-content-center" style={{ width: '45px', height: '45px' }}>
-                <i className="fa-solid fa-share-nodes"></i>
-              </span>
+              Sign-up
             </button>
 
             {/* Cart Icon */}

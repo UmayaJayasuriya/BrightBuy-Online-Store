@@ -4,13 +4,50 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import ProductCard from '../components/common/ProductCard';
-import { getFeaturedProducts } from '../data/products';
+import Spinner from '../components/common/Spinner';
 import './Home.css';
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const featuredProducts = getFeaturedProducts();
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch featured products from different categories
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      setLoading(true);
+      try {
+        // Fetch all categories
+        const categoriesResponse = await axios.get('http://127.0.0.1:8020/categories/');
+        const categories = categoriesResponse.data;
+
+        // Take first 6 categories
+        const selectedCategories = categories.slice(0, 6);
+
+        // Fetch one product from each category
+        const productsPromises = selectedCategories.map(async (category) => {
+          const response = await axios.get(
+            `http://127.0.0.1:8020/products/?category_name=${encodeURIComponent(category.category_name)}`
+          );
+          // Return the first product from this category
+          return response.data[0];
+        });
+
+        const products = await Promise.all(productsPromises);
+        // Filter out any undefined products (categories with no products)
+        setFeaturedProducts(products.filter(p => p));
+      } catch (error) {
+        console.error('Error fetching featured products:', error);
+        setFeaturedProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, []);
 
   const carouselSlides = [
     {
@@ -197,20 +234,26 @@ const Home = () => {
         <div className="container py-5">
           <div className="section-title text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">
             <h1 className="display-5 mb-3">Featured Products</h1>
-            <p className="text-muted">Check out our best-selling electronics</p>
+            <p className="text-muted">Check out our best-selling electronics from different categories</p>
           </div>
 
-          <div className="row g-4">
-            {featuredProducts.slice(0, 6).map((product) => (
-              <div
-                key={product.id}
-                className="col-md-6 col-lg-4 col-xl-4 wow fadeInUp"
-                data-wow-delay="0.1s"
-              >
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-5">
+              <Spinner />
+            </div>
+          ) : (
+            <div className="row g-4">
+              {featuredProducts.map((product, index) => (
+                <div
+                  key={product.product_id}
+                  className="col-md-6 col-lg-4 col-xl-4 wow fadeInUp"
+                  data-wow-delay={`${index * 0.1}s`}
+                >
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="text-center mt-5">
             <Link to="/shop" className="btn btn-primary rounded-pill py-3 px-5">
@@ -218,33 +261,7 @@ const Home = () => {
             </Link>
           </div>
         </div>
-      </div>
-
-      {/* Newsletter Section */}
-      <div className="container-fluid newsletter bg-gradient-secondary py-5">
-        <div className="container py-5">
-          <div className="row g-5 align-items-center">
-            <div className="col-lg-6 wow fadeInLeft" data-wow-delay="0.1s">
-              <h2 className="mb-4 text-on-dark">Subscribe to Our Newsletter</h2>
-              <p className="mb-4 text-on-dark">
-                Get the latest updates on new products and upcoming sales
-              </p>
-            </div>
-            <div className="col-lg-6 wow fadeInRight" data-wow-delay="0.3s">
-              <div className="position-relative mx-auto rounded-pill">
-                <input
-                  className="form-control rounded-pill w-100 py-3 ps-4 pe-5"
-                  type="email"
-                  placeholder="Enter your email"
-                />
-                <button className="btn btn-primary rounded-pill position-absolute top-0 end-0 py-2 mt-2 me-2">
-                  Subscribe
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      </div>    
     </div>
   );
 };

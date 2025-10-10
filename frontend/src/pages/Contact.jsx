@@ -4,6 +4,7 @@
  */
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import './Contact.css';
 
 const Contact = () => {
@@ -14,6 +15,9 @@ const Contact = () => {
     message: ''
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -21,10 +25,54 @@ const Contact = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    setIsSubmitting(true);
+    setSubmitStatus({ type: '', message: '' });
+
+    try {
+      console.log('📤 Submitting contact form:', {
+        customer_name: formData.name,
+        email: formData.email,
+        subject_name: formData.subject,
+        message: formData.message
+      });
+
+      const response = await axios.post('http://127.0.0.1:8020/contact/', {
+        customer_name: formData.name,
+        email: formData.email,
+        subject_name: formData.subject,
+        message: formData.message
+      });
+
+      console.log('✅ Response:', response);
+
+      if (response.status === 201) {
+        setSubmitStatus({
+          type: 'success',
+          message: 'Thank you for your message! We will get back to you soon.'
+        });
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      }
+    } catch (error) {
+      console.error('❌ Error submitting contact form:', error);
+      console.error('Error response:', error.response);
+      console.error('Error details:', error.response?.data);
+      
+      let errorMessage = 'Failed to send message. Please try again later.';
+      if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.message) {
+        errorMessage = `Error: ${error.message}`;
+      }
+      
+      setSubmitStatus({
+        type: 'error',
+        message: errorMessage
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -67,7 +115,7 @@ const Contact = () => {
                   <i className="fas fa-map-marker-alt fa-2x text-primary"></i>
                 </div>
                 <h5>Address</h5>
-                <p className="text-muted">123 Street, New York, USA</p>
+                <p className="text-muted">123 Street, Texas, USA</p>
               </div>
             </div>
             <div className="col-md-6 col-lg-3">
@@ -76,7 +124,7 @@ const Contact = () => {
                   <i className="fas fa-envelope fa-2x text-primary"></i>
                 </div>
                 <h5>Email</h5>
-                <p className="text-muted">info@example.com</p>
+                <p className="text-muted">brightbuy@gmail.com</p>
               </div>
             </div>
             <div className="col-md-6 col-lg-3">
@@ -106,6 +154,20 @@ const Contact = () => {
               <p className="mb-4">
                 Have a question or feedback? Fill out the form below and we'll get back to you as soon as possible.
               </p>
+              
+              {/* Success/Error Messages */}
+              {submitStatus.message && (
+                <div className={`alert ${submitStatus.type === 'success' ? 'alert-success' : 'alert-danger'} alert-dismissible fade show`} role="alert">
+                  {submitStatus.message}
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => setSubmitStatus({ type: '', message: '' })}
+                    aria-label="Close"
+                  ></button>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit}>
                 <div className="row g-3">
                   <div className="col-md-6">
@@ -118,6 +180,7 @@ const Contact = () => {
                         placeholder="Your Name"
                         value={formData.name}
                         onChange={handleInputChange}
+                        maxLength={100}
                         required
                       />
                       <label htmlFor="name">Your Name</label>
@@ -133,6 +196,7 @@ const Contact = () => {
                         placeholder="Your Email"
                         value={formData.email}
                         onChange={handleInputChange}
+                        maxLength={100}
                         required
                       />
                       <label htmlFor="email">Your Email</label>
@@ -148,6 +212,7 @@ const Contact = () => {
                         placeholder="Subject"
                         value={formData.subject}
                         onChange={handleInputChange}
+                        maxLength={200}
                         required
                       />
                       <label htmlFor="subject">Subject</label>
@@ -163,14 +228,19 @@ const Contact = () => {
                         style={{ height: '150px' }}
                         value={formData.message}
                         onChange={handleInputChange}
+                        maxLength={2000}
                         required
                       ></textarea>
                       <label htmlFor="message">Message</label>
                     </div>
                   </div>
                   <div className="col-12">
-                    <button className="btn btn-primary rounded-pill py-3 px-5" type="submit">
-                      Send Message
+                    <button 
+                      className="btn btn-primary rounded-pill py-3 px-5" 
+                      type="submit"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? 'Sending...' : 'Send Message'}
                     </button>
                   </div>
                 </div>
@@ -183,7 +253,7 @@ const Contact = () => {
               <div className="map-container rounded overflow-hidden">
                 <iframe
                   title="Google Map"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.9476519598093!2d-73.99185368459418!3d40.74117197932881!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d107194.85104867952!2d-96.87195344453126!3d32.82058395937124!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x864e992e2d4d4f59%3A0x93c6c11bac9c8e4a!2sDallas%2C%20TX!5e0!3m2!1sen!2sus!4v1728568890123!5m2!1sen!2sus"
                   width="100%"
                   height="450"
                   style={{ border: 0 }}

@@ -4,19 +4,67 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import axios from 'axios';
 import ProductCard from '../components/common/ProductCard';
-import { products, getProductsByCategory } from '../data/products';
+import Spinner from '../components/common/Spinner';
 import './Shop.css';
 
 const Shop = () => {
   const [searchParams] = useSearchParams();
-  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All Category');
   const [sortBy, setSortBy] = useState('default');
-  const [priceRange, setPriceRange] = useState([0, 3000]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const categories = ['All Category', 'SmartPhone', 'Tablets', 'Laptops & Desktops', 'Accessories', 'Mobiles & Tablets', 'SmartPhone & Smart TV'];
+  // Fetch categories from backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8020/categories/');
+        setCategories(response.data);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setError('Failed to load categories');
+      }
+    };
+    fetchCategories();
+  }, []);
 
+  // Fetch products when component mounts or category changes
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        let url = 'http://127.0.0.1:8020/products/';
+        
+        // If a specific category is selected, filter by it
+        if (selectedCategory && selectedCategory !== 'All Category') {
+          url += `?category_name=${encodeURIComponent(selectedCategory)}`;
+        }
+        
+        console.log('🔍 Fetching products from:', url, '| Selected category:', selectedCategory);
+        const response = await axios.get(url);
+        console.log('✅ Products received:', response.data.length, 'products');
+        setProducts(response.data);
+        setFilteredProducts(response.data);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+        setProducts([]);
+        setFilteredProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, [selectedCategory]);
+
+  // Handle category from URL params
   useEffect(() => {
     const category = searchParams.get('category');
     if (category) {
@@ -24,27 +72,17 @@ const Shop = () => {
     }
   }, [searchParams]);
 
+  // Apply filters and sorting to products
   useEffect(() => {
-    let filtered = getProductsByCategory(selectedCategory);
-
-    // Apply price filter
-    filtered = filtered.filter(
-      (product) => product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
+    let filtered = [...products];
 
     // Apply sorting
-    if (sortBy === 'price-low') {
-      filtered.sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'price-high') {
-      filtered.sort((a, b) => b.price - a.price);
-    } else if (sortBy === 'name') {
-      filtered.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortBy === 'rating') {
-      filtered.sort((a, b) => b.rating - a.rating);
+    if (sortBy === 'name') {
+      filtered.sort((a, b) => a.product_name.localeCompare(b.product_name));
     }
 
     setFilteredProducts(filtered);
-  }, [selectedCategory, sortBy, priceRange]);
+  }, [products, sortBy]);
 
   return (
     <div className="shop-page">
@@ -87,49 +125,29 @@ const Shop = () => {
                 <div className="sidebar-widget mb-4">
                   <h4 className="mb-3">Categories</h4>
                   <ul className="list-unstyled">
+                    <li className="mb-2">
+                      <button
+                        className={`btn btn-link text-decoration-none ${
+                          selectedCategory === 'All Category' ? 'text-primary fw-bold' : 'text-dark'
+                        }`}
+                        onClick={() => setSelectedCategory('All Category')}
+                      >
+                        All Category
+                      </button>
+                    </li>
                     {categories.map((category) => (
-                      <li key={category} className="mb-2">
+                      <li key={category.category_id} className="mb-2">
                         <button
                           className={`btn btn-link text-decoration-none ${
-                            selectedCategory === category ? 'text-primary fw-bold' : 'text-dark'
+                            selectedCategory === category.category_name ? 'text-primary fw-bold' : 'text-dark'
                           }`}
-                          onClick={() => setSelectedCategory(category)}
+                          onClick={() => setSelectedCategory(category.category_name)}
                         >
-                          {category}
+                          {category.category_name}
                         </button>
                       </li>
                     ))}
                   </ul>
-                </div>
-
-                {/* Price Filter */}
-                <div className="sidebar-widget mb-4">
-                  <h4 className="mb-3">Price Range</h4>
-                  <div className="price-range">
-                    <input
-                      type="range"
-                      className="form-range"
-                      min="0"
-                      max="3000"
-                      step="50"
-                      value={priceRange[1]}
-                      onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
-                    />
-                    <div className="d-flex justify-content-between mt-2">
-                      <span>${priceRange[0]}</span>
-                      <span>${priceRange[1]}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Featured Product */}
-                <div className="sidebar-widget">
-                  <h4 className="mb-3">Featured</h4>
-                  <div className="border rounded p-3">
-                    <img src="/img/product-1.png" className="img-fluid mb-3" alt="Featured" />
-                    <h6>Apple iPad Mini</h6>
-                    <p className="text-primary mb-0">$1,050.00</p>
-                  </div>
                 </div>
               </div>
             </div>
@@ -153,51 +171,41 @@ const Shop = () => {
                   >
                     <option value="default">Default</option>
                     <option value="name">Name</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="rating">Rating</option>
                   </select>
                 </div>
               </div>
 
-              {/* Products Grid */}
-              <div className="row g-4">
-                {filteredProducts.length > 0 ? (
-                  filteredProducts.map((product) => (
-                    <div key={product.id} className="col-md-6 col-xl-4">
-                      <ProductCard product={product} />
-                    </div>
-                  ))
-                ) : (
-                  <div className="col-12">
-                    <div className="alert alert-info text-center">
-                      No products found matching your criteria.
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Loading State */}
+              {loading && (
+                <div className="text-center py-5">
+                  <Spinner />
+                </div>
+              )}
 
-              {/* Pagination */}
-              {filteredProducts.length > 0 && (
-                <nav className="mt-5">
-                  <ul className="pagination justify-content-center">
-                    <li className="page-item disabled">
-                      <a className="page-link" href="#prev">Previous</a>
-                    </li>
-                    <li className="page-item active">
-                      <a className="page-link" href="#1">1</a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link" href="#2">2</a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link" href="#3">3</a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link" href="#next">Next</a>
-                    </li>
-                  </ul>
-                </nav>
+              {/* Error State */}
+              {error && (
+                <div className="alert alert-danger">
+                  {error}
+                </div>
+              )}
+
+              {/* Products Grid */}
+              {!loading && !error && (
+                <div className="row g-4">
+                  {filteredProducts.length > 0 ? (
+                    filteredProducts.map((product) => (
+                      <div key={product.product_id} className="col-md-6 col-xl-4">
+                        <ProductCard product={product} />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-12">
+                      <div className="alert alert-info text-center">
+                        No products found matching your criteria.
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>

@@ -17,4 +17,6 @@ def get_db():
 
 @router.get("/", response_model=List[CategoryOut])
 def get_all_categories(db: Session = Depends(get_db)):
-    return db.query(Category).all()
+    # Get all categories ordered by ID and skip the first 3
+    all_categories = db.query(Category).order_by(Category.category_id).all()
+    return all_categories[3:]  # Skip first 3 categories

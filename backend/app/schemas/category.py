@@ -8,4 +8,4 @@ class CategoryOut(BaseModel):
     parent_category_id: Optional[int]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
