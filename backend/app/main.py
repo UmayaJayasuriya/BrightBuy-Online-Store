@@ -9,6 +9,7 @@ from app.routes import user
 from app.routes import auth
 from app.routes import product
 from app.routes import contact
+from app.routes import cart
 
 app = FastAPI()
 
@@ -35,6 +36,7 @@ app.include_router(user.router)
 app.include_router(auth.router)
 app.include_router(product.router)
 app.include_router(contact.router)
+app.include_router(cart.router)
 
 
 

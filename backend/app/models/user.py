@@ -14,6 +14,7 @@ class User(Base):
     address_id = Column(Integer, ForeignKey("address.address_id", ondelete="SET NULL"), nullable=True)
 
     address = relationship("Address", back_populates="users")
+    carts = relationship("Cart", back_populates="user")
 
 class Address(Base):
     __tablename__ = "address"

@@ -3,22 +3,26 @@
  * Detailed product view with variants, images, description, and add to cart
  */
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/common/ProductCard';
 import Spinner from '../components/common/Spinner';
 import './Single.css';
 
 const Single = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { addToCart, addToWishlist } = useCart();
+  const { isAuthenticated, user, openLoginModal } = useAuth();
   const [productData, setProductData] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [addingToCart, setAddingToCart] = useState(false);
 
   // Fetch product with variants
   useEffect(() => {
@@ -57,13 +61,46 @@ const Single = () => {
     }
   }, [id]);
 
-  const handleAddToCart = () => {
-    if (selectedVariant) {
+  const handleAddToCart = async () => {
+    // Check if user is logged in
+    if (!isAuthenticated) {
+      // Open login modal instead of navigating away
+      openLoginModal();
+      return;
+    }
+
+    if (!selectedVariant) {
+      alert('Please select a variant');
+      return;
+    }
+
+    setAddingToCart(true);
+    try {
+      // Add to cart via backend API
+      const response = await axios.post(
+        `http://127.0.0.1:8020/cart/add?user_id=${user.user_id}`,
+        {
+          variant_id: selectedVariant.variant_id,
+          quantity: quantity
+        }
+      );
+
+      console.log('Added to cart:', response.data);
+      
+      // Also update local cart context for immediate UI feedback
       addToCart({
         ...productData,
         ...selectedVariant,
         name: `${productData.product_name} - ${selectedVariant.variant_name}`
       }, quantity);
+
+      alert(`Added ${quantity} ${selectedVariant.variant_name} to cart!`);
+      
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+      alert(err.response?.data?.detail || 'Failed to add to cart. Please try again.');
+    } finally {
+      setAddingToCart(false);
     }
   };
 
@@ -304,10 +341,11 @@ const Single = () => {
                   <button
                     className="btn btn-primary btn-lg flex-grow-1"
                     onClick={handleAddToCart}
-                    disabled={!selectedVariant || selectedVariant.quantity === 0}
+                    disabled={!selectedVariant || selectedVariant.quantity === 0 || addingToCart}
                   >
                     <i className="fas fa-shopping-cart me-2"></i>
-                    {selectedVariant && selectedVariant.quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
+                    {addingToCart ? 'Adding...' : 
+                     selectedVariant && selectedVariant.quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
                   </button>
                 </div>
               </div>

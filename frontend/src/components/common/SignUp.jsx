@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './SignUp.css';
 
-const SignUp = ({ isOpen, onClose, onSignUpSuccess }) => {
+const SignUp = ({ isOpen, onClose, onSignUpSuccess, onSwitchToLogin }) => {
   const [form, setForm] = useState({
     user_name: '',
     email: '',
@@ -136,6 +136,23 @@ const SignUp = ({ isOpen, onClose, onSignUpSuccess }) => {
           <button className="signup-btn" type="submit" disabled={loading}>
             {loading ? (<><i className="fa-solid fa-spinner fa-spin me-2" /> Creating...</>) : 'Create account'}
           </button>
+
+          <div className="signup-footer">
+            <p>
+              Already have an account? 
+              <a 
+                href="#login" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onSwitchToLogin) {
+                    onSwitchToLogin();
+                  }
+                }}
+              >
+                Login here
+              </a>
+            </p>
+          </div>
         </form>
       </div>
     </div>

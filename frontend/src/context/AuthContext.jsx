@@ -17,6 +17,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loginModalCallback, setLoginModalCallback] = useState(null);
 
   useEffect(() => {
     // Check if user is logged in on app start
@@ -42,6 +43,16 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
   };
 
+  const openLoginModal = () => {
+    if (loginModalCallback) {
+      loginModalCallback();
+    }
+  };
+
+  const registerLoginModalHandler = (callback) => {
+    setLoginModalCallback(() => callback);
+  };
+
   const isAuthenticated = !!user;
 
   const value = {
@@ -49,7 +60,9 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     isLoading,
     login,
-    logout
+    logout,
+    openLoginModal,
+    registerLoginModalHandler
   };
 
   return (

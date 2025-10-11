@@ -1,22 +1,117 @@
 /**
  * Cart Page Component
- * Shopping cart with item management
+ * Shopping cart with item management from database
  */
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import Spinner from '../components/common/Spinner';
 import './Cart.css';
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useCart();
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
+  const [cartData, setCartData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const handleQuantityChange = (productId, newQuantity) => {
-    if (newQuantity >= 1) {
-      updateQuantity(productId, newQuantity);
+  // Fetch cart data from backend
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (!isAuthenticated || !user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://127.0.0.1:8020/cart/${user.user_id}`);
+        setCartData(response.data);
+        console.log('Cart data:', response.data);
+      } catch (err) {
+        console.error('Error fetching cart:', err);
+        setError('Failed to load cart');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCart();
+  }, [isAuthenticated, user]);
+
+  const handleQuantityChange = async (cartItemId, newQuantity) => {
+    if (newQuantity < 1) return;
+
+    try {
+      await axios.put(`http://127.0.0.1:8020/cart/update/${cartItemId}?quantity=${newQuantity}`);
+      
+      // Refresh cart
+      const response = await axios.get(`http://127.0.0.1:8020/cart/${user.user_id}`);
+      setCartData(response.data);
+    } catch (err) {
+      console.error('Error updating quantity:', err);
+      alert('Failed to update quantity');
     }
   };
 
-  if (cartItems.length === 0) {
+  const handleRemoveItem = async (cartItemId) => {
+    if (!window.confirm('Remove this item from cart?')) return;
+
+    try {
+      await axios.delete(`http://127.0.0.1:8020/cart/remove/${cartItemId}`);
+      
+      // Refresh cart
+      const response = await axios.get(`http://127.0.0.1:8020/cart/${user.user_id}`);
+      setCartData(response.data);
+    } catch (err) {
+      console.error('Error removing item:', err);
+      alert('Failed to remove item');
+    }
+  };
+
+  const handleClearCart = async () => {
+    if (!window.confirm('Clear all items from cart?')) return;
+
+    try {
+      await axios.delete(`http://127.0.0.1:8020/cart/clear/${user.user_id}`);
+      
+      // Refresh cart
+      const response = await axios.get(`http://127.0.0.1:8020/cart/${user.user_id}`);
+      setCartData(response.data);
+    } catch (err) {
+      console.error('Error clearing cart:', err);
+      alert('Failed to clear cart');
+    }
+  };
+
+  // Redirect if not logged in
+  if (!isAuthenticated) {
+    return (
+      <div className="cart-page">
+        <div className="container py-5">
+          <div className="text-center">
+            <i className="fas fa-lock fa-5x text-muted mb-4"></i>
+            <h3>Please Login to View Cart</h3>
+            <p className="text-muted mb-4">You need to be logged in to access your shopping cart.</p>
+            <button onClick={() => navigate('/')} className="btn btn-primary rounded-pill py-3 px-5">
+              Go to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="container py-5">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!cartData || !cartData.cart_items || cartData.cart_items.length === 0) {
     return (
       <div className="cart-page">
         <div className="container-fluid page-header py-5" style={{
@@ -101,30 +196,39 @@ const Cart = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {cartItems.map((item) => (
-                      <tr key={item.id} className="border-bottom">
+                    {cartData.cart_items.map((item) => (
+                      <tr key={item.cart_item_id} className="border-bottom">
                         <td>
                           <div className="d-flex align-items-center">
                             <img
-                              src={item.image}
-                              alt={item.name}
-                              style={{ width: '80px', height: '80px', objectFit: 'cover' }}
+                              src={`/img/products/${item.variant_id}.png`}
+                              alt={item.variant_name}
+                              style={{ width: '80px', height: '80px', objectFit: 'cover', backgroundColor: '#f8f9fa' }}
                               className="rounded me-3"
+                              onError={(e) => {
+                                // Fallback to product image if variant image doesn't exist
+                                if (e.target.src.includes(`/img/products/${item.variant_id}.png`)) {
+                                  e.target.src = `/img/products/${item.product_id}.png`;
+                                } else {
+                                  // If product image also fails, use a placeholder
+                                  e.target.style.display = 'none';
+                                }
+                              }}
                             />
                             <div>
-                              <h6 className="mb-1">{item.name}</h6>
-                              <small className="text-muted">{item.category}</small>
+                              <h6 className="mb-1">{item.product_name}</h6>
+                              <small className="text-muted">{item.variant_name}</small>
                             </div>
                           </div>
                         </td>
                         <td className="align-middle">
-                          <strong>${item.price.toFixed(2)}</strong>
+                          <strong>${parseFloat(item.price).toFixed(2)}</strong>
                         </td>
                         <td className="align-middle">
                           <div className="input-group" style={{ width: '130px' }}>
                             <button
                               className="btn btn-sm btn-outline-secondary"
-                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                              onClick={() => handleQuantityChange(item.cart_item_id, item.quantity - 1)}
                             >
                               <i className="fas fa-minus"></i>
                             </button>
@@ -133,13 +237,13 @@ const Cart = () => {
                               className="form-control form-control-sm text-center"
                               value={item.quantity}
                               onChange={(e) =>
-                                handleQuantityChange(item.id, parseInt(e.target.value) || 1)
+                                handleQuantityChange(item.cart_item_id, parseInt(e.target.value) || 1)
                               }
                               min="1"
                             />
                             <button
                               className="btn btn-sm btn-outline-secondary"
-                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                              onClick={() => handleQuantityChange(item.cart_item_id, item.quantity + 1)}
                             >
                               <i className="fas fa-plus"></i>
                             </button>
@@ -147,14 +251,13 @@ const Cart = () => {
                         </td>
                         <td className="align-middle">
                           <strong className="text-primary">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            ${(parseFloat(item.price) * item.quantity).toFixed(2)}
                           </strong>
                         </td>
                         <td className="align-middle">
                           <button
                             className="btn btn-sm btn-danger rounded-circle"
-                            onClick={() => removeFromCart(item.id)}
-                            title="Remove item"
+                            onClick={() => handleRemoveItem(item.cart_item_id)}
                           >
                             <i className="fas fa-times"></i>
                           </button>
@@ -170,6 +273,10 @@ const Cart = () => {
                   <i className="fas fa-arrow-left me-2"></i>
                   Continue Shopping
                 </Link>
+                <button onClick={handleClearCart} className="btn btn-outline-danger">
+                  <i className="fas fa-trash me-2"></i>
+                  Clear Cart
+                </button>
               </div>
             </div>
 
@@ -180,7 +287,7 @@ const Cart = () => {
                 
                 <div className="d-flex justify-content-between mb-3">
                   <span>Subtotal:</span>
-                  <strong>${getCartTotal().toFixed(2)}</strong>
+                  <strong>${parseFloat(cartData.total_amount || 0).toFixed(2)}</strong>
                 </div>
                 
                 <div className="d-flex justify-content-between mb-3">
@@ -190,14 +297,14 @@ const Cart = () => {
                 
                 <div className="d-flex justify-content-between mb-3">
                   <span>Tax (10%):</span>
-                  <strong>${(getCartTotal() * 0.1).toFixed(2)}</strong>
+                  <strong>${(parseFloat(cartData.total_amount || 0) * 0.1).toFixed(2)}</strong>
                 </div>
                 
                 <hr />
                 
                 <div className="d-flex justify-content-between mb-4">
                   <h5>Total:</h5>
-                  <h5 className="text-primary">${(getCartTotal() * 1.1).toFixed(2)}</h5>
+                  <h5 className="text-primary">${(parseFloat(cartData.total_amount || 0) * 1.1).toFixed(2)}</h5>
                 </div>
 
                 {/* Coupon Code */}

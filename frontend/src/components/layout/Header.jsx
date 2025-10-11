@@ -2,8 +2,9 @@
  * Header Component
  * Displays the main site logo, search bar, and cart/wishlist icons
  */
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import Login from '../common/Login';
@@ -12,16 +13,60 @@ import './Header.css';
 
 const Header = () => {
   const { getCartTotal, getCartItemsCount } = useCart();
-  const { isAuthenticated, user, login, logout } = useAuth();
+  const { isAuthenticated, user, login, logout, registerLoginModalHandler } = useAuth();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All Category');
+  const [selectedCategory, setSelectedCategory] = useState('All Categories');
+  const [categories, setCategories] = useState([]);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
+  // Register login modal handler on mount
+  useEffect(() => {
+    registerLoginModalHandler(() => setIsLoginOpen(true));
+  }, [registerLoginModalHandler]);
+
+  // Fetch categories from backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8020/categories/');
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const handleSearch = (e) => {
     e.preventDefault();
-    // Implement search functionality
-    console.log('Searching for:', searchQuery, 'in category:', selectedCategory);
+    // Navigate to shop page with search query and category filter
+    if (searchQuery.trim()) {
+      const params = new URLSearchParams();
+      params.append('search', searchQuery);
+      if (selectedCategory && selectedCategory !== 'All Categories') {
+        params.append('category', selectedCategory);
+      }
+      navigate(`/shop?${params.toString()}`);
+    } else if (selectedCategory && selectedCategory !== 'All Categories') {
+      // If no search query but category is selected, navigate to that category
+      navigate(`/shop?category=${encodeURIComponent(selectedCategory)}`);
+    } else {
+      // If neither search nor category, just go to shop
+      navigate('/shop');
+    }
+  };
+
+  const handleCategoryChange = (e) => {
+    const category = e.target.value;
+    setSelectedCategory(category);
+    // Navigate to shop page with selected category
+    if (category && category !== 'All Categories') {
+      navigate(`/shop?category=${encodeURIComponent(category)}`);
+    } else {
+      navigate('/shop');
+    }
   };
 
   const handleWishlistClick = (e) => {
@@ -76,19 +121,14 @@ const Header = () => {
                 className="form-select text-dark border-0 border-start rounded-0 p-3"
                 style={{ width: '200px' }}
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={handleCategoryChange}
               >
                 <option value="All Categories">All Categories</option>
-                <option value="Smartphones">Smartphones</option>
-                <option value="Mobile Accessories">Mobile Accessories</option>
-                <option value="Tablets & E-readers">Tablets & E-readers</option>
-                <option value="Laptops">Laptops</option>
-                <option value="Mouse & Keyboards">Mouse & Keyboards</option>
-                <option value="Gaming Consoles">Gaming Consoles</option>
-                <option value="Smart Watches & Wearables">Smart Watches & Wearables</option>
-                <option value="Smart Home Devices">Smart Home Devices</option>
-                <option value="Toys & Gadgets">Toys & Gadgets</option>
-                <option value="Bluetooth Speakers">Bluetooth Speakers</option>
+                {categories.map((category) => (
+                  <option key={category.category_id} value={category.category_name}>
+                    {category.category_name}
+                  </option>
+                ))}
               </select>
               <button
                 type="submit"
@@ -172,6 +212,10 @@ const Header = () => {
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
         onLoginSuccess={handleLoginSuccess}
+        onSwitchToSignUp={() => {
+          setIsLoginOpen(false);
+          setIsSignUpOpen(true);
+        }}
       />
 
       {/* SignUp Modal */}
@@ -183,6 +227,10 @@ const Header = () => {
           // set as authenticated user in context
           login(createdUser);
           setIsSignUpOpen(false);
+        }}
+        onSwitchToLogin={() => {
+          setIsSignUpOpen(false);
+          setIsLoginOpen(true);
         }}
       />
     </div>

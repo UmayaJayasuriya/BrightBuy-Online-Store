@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './Login.css';
 
-const Login = ({ isOpen, onClose, onLoginSuccess }) => {
+const Login = ({ isOpen, onClose, onLoginSuccess, onSwitchToSignUp }) => {
   const [formData, setFormData] = useState({
     identifier: '',
     password: ''
@@ -108,7 +108,20 @@ const Login = ({ isOpen, onClose, onLoginSuccess }) => {
           </button>
 
           <div className="login-footer">
-            <p>Don't have an account? <a href="#register">Sign up here</a></p>
+            <p>
+              Don't have an account? 
+              <a 
+                href="#register" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (onSwitchToSignUp) {
+                    onSwitchToSignUp();
+                  }
+                }}
+              >
+                Sign up here
+              </a>
+            </p>
           </div>
         </form>
       </div>
