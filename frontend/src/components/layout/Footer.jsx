@@ -2,11 +2,20 @@
  * Footer Component
  * Site footer with contact info, newsletter signup, and links
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
 
 const Footer = () => {
+  const [email, setEmail] = useState('');
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    // Handle newsletter subscription
+    console.log('Newsletter signup:', email);
+    setEmail('');
+  };
+
   return (
     <>
       {/* Footer Start */}
@@ -74,6 +83,22 @@ const Footer = () => {
               </div>
             </div>
           </div>
+
+          {/* Footer Links */}
+          <div className="row g-5 justify-content-center">
+            {/* About Us */}
+            <div className="col-md-8 col-lg-6">
+              <div className="footer-item d-flex flex-column text-center">
+                <h4 className="text-primary mb-4">About Us</h4>
+                <p className="mb-3">
+                  We are dedicated to providing exceptional service and quality products. 
+                  Our mission is to exceed your expectations with innovative solutions and 
+                  outstanding customer support. With years of experience and a commitment to excellence, 
+                  we strive to build lasting relationships with our clients.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -89,7 +114,7 @@ const Footer = () => {
                 , All right reserved.
               </span>
             </div>
-          
+            
           </div>
         </div>
       </div>
