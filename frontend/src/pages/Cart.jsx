@@ -201,17 +201,23 @@ const Cart = () => {
                         <td>
                           <div className="d-flex align-items-center">
                             <img
-                              src={`/img/products/${item.variant_id}.png`}
+                              src={`/img/Variants/${item.variant_id}.jpg`}
                               alt={item.variant_name}
                               style={{ width: '80px', height: '80px', objectFit: 'cover', backgroundColor: '#f8f9fa' }}
                               className="rounded me-3"
                               onError={(e) => {
-                                // Fallback to product image if variant image doesn't exist
-                                if (e.target.src.includes(`/img/products/${item.variant_id}.png`)) {
-                                  e.target.src = `/img/products/${item.product_id}.png`;
+                                // Try different image formats
+                                if (e.target.src.includes('.jpg')) {
+                                  e.target.src = `/img/Variants/${item.variant_id}.png`;
+                                } else if (e.target.src.includes('.png')) {
+                                  e.target.src = `/img/Variants/${item.variant_id}.jpeg`;
+                                } else if (e.target.src.includes('.jpeg')) {
+                                  e.target.src = `/img/Variants/${item.variant_id}.webp`;
+                                } else if (e.target.src.includes('.webp')) {
+                                  e.target.src = `/img/Variants/${item.variant_id}.avif`;
                                 } else {
-                                  // If product image also fails, use a placeholder
-                                  e.target.style.display = 'none';
+                                  // Final fallback to product image
+                                  e.target.src = `/img/product-${item.product_id}.png`;
                                 }
                               }}
                             />
@@ -295,29 +301,11 @@ const Cart = () => {
                   <strong className="text-success">Free</strong>
                 </div>
                 
-                <div className="d-flex justify-content-between mb-3">
-                  <span>Tax (10%):</span>
-                  <strong>${(parseFloat(cartData.total_amount || 0) * 0.1).toFixed(2)}</strong>
-                </div>
-                
                 <hr />
                 
                 <div className="d-flex justify-content-between mb-4">
                   <h5>Total:</h5>
-                  <h5 className="text-primary">${(parseFloat(cartData.total_amount || 0) * 1.1).toFixed(2)}</h5>
-                </div>
-
-                {/* Coupon Code */}
-                <div className="mb-4">
-                  <label className="form-label">Coupon Code</label>
-                  <div className="input-group">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Enter coupon"
-                    />
-                    <button className="btn btn-secondary">Apply</button>
-                  </div>
+                  <h5 className="text-primary">${parseFloat(cartData.total_amount || 0).toFixed(2)}</h5>
                 </div>
 
                 <Link

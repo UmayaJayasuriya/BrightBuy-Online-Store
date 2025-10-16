@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from sqlalchemy import text  
-from app.database import SessionLocal
+import mysql.connector
+from app.database import get_db
 
 from app.routes import category
 from app.routes import user 
@@ -10,6 +9,8 @@ from app.routes import auth
 from app.routes import product
 from app.routes import contact
 from app.routes import cart
+from app.routes import order
+from app.routes import location
 
 app = FastAPI()
 
@@ -25,9 +26,15 @@ app.add_middleware(
 @app.get("/ping-db")
 def ping_db():
     try:
-        db: Session = SessionLocal()
-        db.execute(text("SELECT 1")) 
-        return {"status": "Database connected successfully!"}
+        # Get a connection from the pool
+        db_gen = get_db()
+        db = next(db_gen)
+        cursor = db.cursor()
+        cursor.execute("SELECT 1")
+        result = cursor.fetchone()
+        cursor.close()
+        db.close()
+        return {"status": "Database connected successfully!", "result": result}
     except Exception as e:
         return {"error": str(e)}
 
@@ -37,6 +44,8 @@ app.include_router(auth.router)
 app.include_router(product.router)
 app.include_router(contact.router)
 app.include_router(cart.router)
+app.include_router(order.router)
+app.include_router(location.router)
 
 
 

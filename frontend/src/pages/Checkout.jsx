@@ -2,27 +2,66 @@
  * Checkout Page Component
  * Order checkout with billing and payment information
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import Spinner from '../components/common/Spinner';
 import './Checkout.css';
 
 const Checkout = () => {
-  const { cartItems, getCartTotal, clearCart } = useCart();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  
+  const [cartData, setCartData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [processingOrder, setProcessingOrder] = useState(false);
+  const [error, setError] = useState('');
   
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    email: user?.email || '',
     phone: '',
-    address: '',
+    houseNumber: '',
+    street: '',
     city: '',
     state: '',
-    zipCode: '',
-    country: '',
-    paymentMethod: 'card'
+    paymentMethod: 'card',
+    deliveryMethod: 'home_delivery',
+    addressId: user?.address_id || null
   });
+
+  const [cities, setCities] = useState([]);
+
+  // Fetch cart data and cities
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isAuthenticated || !user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        
+        // Fetch cart
+        const cartResponse = await axios.get(`http://127.0.0.1:8020/cart/${user.user_id}`);
+        setCartData(cartResponse.data);
+        
+        // Fetch cities
+        const citiesResponse = await axios.get('http://127.0.0.1:8020/locations/cities');
+        setCities(citiesResponse.data);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [isAuthenticated, user]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -31,21 +70,114 @@ const Checkout = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Process order
-    alert('Order placed successfully!');
-    clearCart();
-    navigate('/');
+    
+    if (!user) {
+      alert('Please login to place an order');
+      return;
+    }
+
+    // Validate delivery method and address
+    if (formData.deliveryMethod === 'home_delivery') {
+      if (!formData.addressId && (!formData.houseNumber || !formData.street || !formData.city || !formData.state)) {
+        alert('Please fill in all address fields for home delivery');
+        return;
+      }
+    }
+
+    // Prepare order data
+    const orderData = {
+      user_id: user.user_id,
+      payment_method: formData.paymentMethod,
+      delivery_method: formData.deliveryMethod,
+      address_id: null,
+      address_details: null,
+      total_amount: cartData.total_amount
+    };
+
+    // If home delivery, include address
+    if (formData.deliveryMethod === 'home_delivery') {
+      if (formData.addressId) {
+        orderData.address_id = formData.addressId;
+      } else {
+        // Create new address
+        orderData.address_details = {
+          house_number: parseInt(formData.houseNumber),
+          street: formData.street,
+          city: formData.city,
+          state: formData.state
+        };
+      }
+    }
+
+    // If card payment, navigate to payment page
+    if (formData.paymentMethod === 'card') {
+      navigate('/payment', { state: { orderData } });
+      return;
+    }
+
+    // For COD, process order directly
+    setProcessingOrder(true);
+    try {
+      const response = await axios.post('http://127.0.0.1:8020/orders/checkout', orderData);
+
+      const order = response.data;
+      console.log('Order created:', order);
+
+      // Show success message
+      const deliveryMsg = formData.deliveryMethod === 'home_delivery' ? 'Home Delivery' : 'Store Pickup';
+      
+      alert(`Order #${order.order_id} placed successfully!\nTotal: $${parseFloat(order.total_amount).toFixed(2)}\nPayment: Cash on Delivery\nDelivery: ${deliveryMsg}`);
+      
+      // Navigate to home page
+      navigate(`/`);
+      
+    } catch (err) {
+      console.error('Error creating order:', err);
+      alert(err.response?.data?.detail || 'Failed to place order. Please try again.');
+    } finally {
+      setProcessingOrder(false);
+    }
   };
 
-  if (cartItems.length === 0) {
+  // Redirect if not logged in
+  if (!isAuthenticated) {
     return (
-      <div className="container py-5 text-center">
-        <h3>Your cart is empty</h3>
-        <Link to="/shop" className="btn btn-primary mt-3">
-          Continue Shopping
-        </Link>
+      <div className="checkout-page">
+        <div className="container py-5">
+          <div className="text-center">
+            <i className="fas fa-lock fa-5x text-muted mb-4"></i>
+            <h3>Please Login to Checkout</h3>
+            <p className="text-muted mb-4">You need to be logged in to place an order.</p>
+            <button onClick={() => navigate('/')} className="btn btn-primary rounded-pill py-3 px-5">
+              Go to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="container py-5">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!cartData || !cartData.cart_items || cartData.cart_items.length === 0) {
+    return (
+      <div className="checkout-page">
+        <div className="container py-5 text-center">
+          <i className="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
+          <h3>Your cart is empty</h3>
+          <p className="text-muted mb-4">Add some products before checking out.</p>
+          <Link to="/shop" className="btn btn-primary rounded-pill py-3 px-5">
+            Continue Shopping
+          </Link>
+        </div>
       </div>
     );
   }
@@ -110,72 +242,116 @@ const Checkout = () => {
                       required
                     />
                   </div>
-                  <div className="col-12">
-                    <label className="form-label">Address *</label>
+                  {formData.deliveryMethod === 'home_delivery' && (
+                    <>
+                      <div className="col-md-6">
+                        <label className="form-label">House Number *</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="houseNumber"
+                          value={formData.houseNumber}
+                          onChange={handleInputChange}
+                          placeholder="e.g., 123"
+                          required={formData.deliveryMethod === 'home_delivery'}
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label">Street *</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="street"
+                          value={formData.street}
+                          onChange={handleInputChange}
+                          placeholder="e.g., Main Street"
+                          required={formData.deliveryMethod === 'home_delivery'}
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label">City *</label>
+                        <select
+                          className="form-select"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          required={formData.deliveryMethod === 'home_delivery'}
+                        >
+                          <option value="">Select City</option>
+                          {cities.map((city) => (
+                            <option key={city.city_id} value={city.city}>
+                              {city.city} {city.Is_main_city ? '(Main City)' : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label">State *</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="state"
+                          value={formData.state}
+                          onChange={handleInputChange}
+                          placeholder="e.g., California"
+                          required={formData.deliveryMethod === 'home_delivery'}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Delivery Method */}
+                <h4 className="mt-5 mb-4">Delivery Method</h4>
+                <div className="delivery-methods mb-4">
+                  <div className="form-check mb-3 p-3 border rounded">
                     <input
-                      type="text"
-                      className="form-control"
-                      name="address"
-                      value={formData.address}
+                      className="form-check-input"
+                      type="radio"
+                      name="deliveryMethod"
+                      id="home_delivery"
+                      value="home_delivery"
+                      checked={formData.deliveryMethod === 'home_delivery'}
                       onChange={handleInputChange}
-                      required
                     />
+                    <label className="form-check-label" htmlFor="home_delivery">
+                      <strong>Home Delivery</strong>
+                      <br />
+                      <small className="text-muted">
+                        Main cities: 5 days (8 days if out of stock)<br />
+                        Other cities: 7 days (10 days if out of stock)
+                      </small>
+                    </label>
                   </div>
-                  <div className="col-md-6">
-                    <label className="form-label">City *</label>
+                  <div className="form-check p-3 border rounded">
                     <input
-                      type="text"
-                      className="form-control"
-                      name="city"
-                      value={formData.city}
+                      className="form-check-input"
+                      type="radio"
+                      name="deliveryMethod"
+                      id="store_pickup"
+                      value="store_pickup"
+                      checked={formData.deliveryMethod === 'store_pickup'}
                       onChange={handleInputChange}
-                      required
                     />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">State/Province *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">ZIP Code *</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="zipCode"
-                      value={formData.zipCode}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Country *</label>
-                    <select
-                      className="form-select"
-                      name="country"
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      required
-                    >
-                      <option value="">Select Country</option>
-                      <option value="USA">United States</option>
-                      <option value="UK">United Kingdom</option>
-                      <option value="Canada">Canada</option>
-                      <option value="Australia">Australia</option>
-                    </select>
+                    <label className="form-check-label" htmlFor="store_pickup">
+                      <strong>Store Pickup</strong>
+                      <br />
+                      <small className="text-muted">Ready for pickup in 2 business days</small>
+                    </label>
                   </div>
                 </div>
+
+                {formData.deliveryMethod === 'home_delivery' && (
+                  <div className="alert alert-info">
+                    <i className="fas fa-info-circle me-2"></i>
+                    Items will be delivered to your registered address. Delivery time depends on stock availability and your city.
+                  </div>
+                )}
 
                 {/* Payment Method */}
                 <h4 className="mt-5 mb-4">Payment Method</h4>
                 <div className="payment-methods">
-                  <div className="form-check mb-3">
+                  <div className="form-check mb-3 p-3 border rounded">
                     <input
                       className="form-check-input"
                       type="radio"
@@ -186,24 +362,12 @@ const Checkout = () => {
                       onChange={handleInputChange}
                     />
                     <label className="form-check-label" htmlFor="card">
-                      Credit/Debit Card
+                      <strong>Credit/Debit Card</strong>
+                      <br />
+                      <small className="text-muted">Payment will be processed immediately</small>
                     </label>
                   </div>
-                  <div className="form-check mb-3">
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="paymentMethod"
-                      id="paypal"
-                      value="paypal"
-                      checked={formData.paymentMethod === 'paypal'}
-                      onChange={handleInputChange}
-                    />
-                    <label className="form-check-label" htmlFor="paypal">
-                      PayPal
-                    </label>
-                  </div>
-                  <div className="form-check">
+                  <div className="form-check p-3 border rounded">
                     <input
                       className="form-check-input"
                       type="radio"
@@ -214,7 +378,9 @@ const Checkout = () => {
                       onChange={handleInputChange}
                     />
                     <label className="form-check-label" htmlFor="cod">
-                      Cash on Delivery
+                      <strong>Cash on Delivery</strong>
+                      <br />
+                      <small className="text-muted">Pay when you receive your order</small>
                     </label>
                   </div>
                 </div>
@@ -224,38 +390,84 @@ const Checkout = () => {
               <div className="col-lg-4">
                 <div className="bg-light rounded p-4 sticky-top" style={{ top: '100px' }}>
                   <h4 className="mb-4">Your Order</h4>
-                  <div className="order-items">
-                    {cartItems.map((item) => (
-                      <div key={item.id} className="d-flex justify-content-between mb-3">
-                        <div>
-                          <h6 className="mb-0">{item.name}</h6>
-                          <small className="text-muted">Qty: {item.quantity}</small>
+                  <div className="order-items" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    {cartData.cart_items.map((item) => (
+                      <div key={item.cart_item_id} className="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                        <div className="d-flex align-items-center">
+                          <img
+                            src={`/img/Variants/${item.variant_id}.jpg`}
+                            alt={item.variant_name}
+                            style={{ width: '50px', height: '50px', objectFit: 'cover', backgroundColor: '#f8f9fa' }}
+                            className="rounded me-3"
+                            onError={(e) => {
+                              // Try different image formats
+                              if (e.target.src.includes('.jpg')) {
+                                e.target.src = `/img/Variants/${item.variant_id}.png`;
+                              } else if (e.target.src.includes('.png')) {
+                                e.target.src = `/img/Variants/${item.variant_id}.jpeg`;
+                              } else if (e.target.src.includes('.jpeg')) {
+                                e.target.src = `/img/Variants/${item.variant_id}.webp`;
+                              } else if (e.target.src.includes('.webp')) {
+                                e.target.src = `/img/Variants/${item.variant_id}.avif`;
+                              } else {
+                                // Final fallback to product image
+                                e.target.src = `/img/product-${item.product_id}.png`;
+                              }
+                            }}
+                          />
+                          <div>
+                            <h6 className="mb-0" style={{ fontSize: '14px' }}>{item.product_name}</h6>
+                            <small className="text-muted">{item.variant_name}</small>
+                            <br />
+                            <small className="text-muted">Qty: {item.quantity}</small>
+                          </div>
                         </div>
-                        <strong>${(item.price * item.quantity).toFixed(2)}</strong>
+                        <div className="text-end">
+                          <strong>${(parseFloat(item.price) * item.quantity).toFixed(2)}</strong>
+                        </div>
                       </div>
                     ))}
                   </div>
                   <hr />
                   <div className="d-flex justify-content-between mb-2">
                     <span>Subtotal:</span>
-                    <strong>${getCartTotal().toFixed(2)}</strong>
-                  </div>
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>Shipping:</span>
-                    <strong className="text-success">Free</strong>
+                    <strong>${parseFloat(cartData.total_amount || 0).toFixed(2)}</strong>
                   </div>
                   <div className="d-flex justify-content-between mb-3">
-                    <span>Tax (10%):</span>
-                    <strong>${(getCartTotal() * 0.1).toFixed(2)}</strong>
+                    <span>Shipping:</span>
+                    <strong className="text-success">Free</strong>
                   </div>
                   <hr />
                   <div className="d-flex justify-content-between mb-4">
                     <h5>Total:</h5>
-                    <h5 className="text-primary">${(getCartTotal() * 1.1).toFixed(2)}</h5>
+                    <h5 className="text-primary">${parseFloat(cartData.total_amount || 0).toFixed(2)}</h5>
                   </div>
-                  <button type="submit" className="btn btn-primary w-100 rounded-pill py-3">
-                    Place Order
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary w-100 rounded-pill py-3"
+                    disabled={processingOrder}
+                  >
+                    {processingOrder ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin me-2"></i>
+                        Processing...
+                      </>
+                    ) : formData.paymentMethod === 'card' ? (
+                      <>
+                        <i className="fas fa-credit-card me-2"></i>
+                        Proceed to Payment
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-check me-2"></i>
+                        Place Order
+                      </>
+                    )}
                   </button>
+                  <Link to="/cart" className="btn btn-outline-secondary w-100 rounded-pill py-2 mt-2">
+                    <i className="fas fa-arrow-left me-2"></i>
+                    Back to Cart
+                  </Link>
                 </div>
               </div>
             </div>

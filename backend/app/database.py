@@ -1,23 +1,55 @@
-
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+﻿"""
+Database connection using official MySQL Connector/Python
+No SQLAlchemy - Pure MySQL connector
+"""
+import mysql.connector
+from mysql.connector import pooling
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+# Database configuration from environment variables
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_USER = os.getenv('DB_USER', 'root')
+DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+DB_NAME = os.getenv('DB_NAME', 'brightbuy')
+DB_PORT = int(os.getenv('DB_PORT', 3306))
 
-engine = create_engine(DATABASE_URL)
+# Database connection configuration
+DB_CONFIG = {
+    'host': DB_HOST,
+    'user': DB_USER,
+    'password': DB_PASSWORD,
+    'database': DB_NAME,
+    'port': DB_PORT,
+    'autocommit': False,
+    'raise_on_warnings': True
+}
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Create connection pool for better performance
+connection_pool = mysql.connector.pooling.MySQLConnectionPool(
+    pool_name="brightbuy_pool",
+    pool_size=10,
+    pool_reset_session=True,
+    **DB_CONFIG
+)
 
-Base = declarative_base()
+def get_connection():
+    """
+    Get a connection from the pool.
+    Returns a mysql.connector connection object.
+    """
+    return connection_pool.get_connection()
 
 def get_db():
-    db = SessionLocal()
+    """
+    Dependency function to get database connection.
+    Returns a mysql.connector connection object with dictionary cursor.
+    """
+    connection = connection_pool.get_connection()
     try:
-        yield db
+        yield connection
     finally:
-        db.close()
+        if connection.is_connected():
+            connection.close()

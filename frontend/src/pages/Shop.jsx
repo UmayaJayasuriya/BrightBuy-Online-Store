@@ -41,7 +41,7 @@ const Shop = () => {
       try {
         let url = 'http://127.0.0.1:8020/products/';
         
-        // If a specific category is selected, filter by it
+        // Only filter by category if a specific category is selected (not "All Category")
         if (selectedCategory && selectedCategory !== 'All Category') {
           url += `?category_name=${encodeURIComponent(selectedCategory)}`;
         }

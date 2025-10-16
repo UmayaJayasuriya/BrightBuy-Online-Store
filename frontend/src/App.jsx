@@ -25,6 +25,8 @@ import Single from './pages/Single';
 import Bestseller from './pages/Bestseller';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import Payment from './pages/Payment';
+import Profile from './pages/Profile';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 
@@ -50,6 +52,8 @@ function App() {
               <Route path="/bestseller" element={<Bestseller />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
+              <Route path="/payment" element={<Payment />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

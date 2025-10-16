@@ -5,14 +5,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import Login from '../common/Login';
 import SignUp from '../common/SignUp';
 import './Header.css';
 
 const Header = () => {
-  const { getCartTotal, getCartItemsCount } = useCart();
   const { isAuthenticated, user, login, logout, registerLoginModalHandler } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,6 +18,8 @@ const Header = () => {
   const [categories, setCategories] = useState([]);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const [cartTotal, setCartTotal] = useState(0);
 
   // Register login modal handler on mount
   useEffect(() => {
@@ -38,6 +38,46 @@ const Header = () => {
     };
     fetchCategories();
   }, []);
+
+  // Fetch cart data from backend
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (!isAuthenticated || !user) {
+        setCartCount(0);
+        setCartTotal(0);
+        return;
+      }
+
+      try {
+        const response = await axios.get(`http://127.0.0.1:8020/cart/${user.user_id}`);
+        const cartData = response.data;
+        if (cartData && cartData.cart_items) {
+          // Calculate total count
+          const count = cartData.cart_items.reduce((sum, item) => sum + item.quantity, 0);
+          setCartCount(count);
+          setCartTotal(parseFloat(cartData.total_amount || 0));
+        } else {
+          setCartCount(0);
+          setCartTotal(0);
+        }
+      } catch (error) {
+        console.error('Error fetching cart:', error);
+        setCartCount(0);
+        setCartTotal(0);
+      }
+    };
+
+    fetchCart();
+    
+    // Refresh cart every 5 seconds if user is authenticated
+    const interval = setInterval(() => {
+      if (isAuthenticated && user) {
+        fetchCart();
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated, user]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -173,13 +213,13 @@ const Header = () => {
             >
               <span className="rounded-circle btn-md-square border position-relative d-flex align-items-center justify-content-center" style={{ width: '45px', height: '45px' }}>
                 <i className="fa-solid fa-shopping-cart"></i>
-                {getCartItemsCount() > 0 && (
+                {cartCount > 0 && (
                   <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    {getCartItemsCount()}
+                    {cartCount}
                   </span>
                 )}
               </span>
-              <span className="text-dark ms-2">${getCartTotal().toFixed(2)}</span>
+              <span className="text-dark ms-2">${cartTotal.toFixed(2)}</span>
             </Link>
           </div>
         </div>
@@ -192,7 +232,7 @@ const Header = () => {
             <div className="col-12 text-end">
               <small className="text-muted">
                 <span className="user-greeting">
-                  <span>Welcome back, <strong className="text-primary">{user.user_name}</strong>!</span>
+                  <span>Welcome back, <Link to="/profile" className="text-decoration-none"><strong className="text-primary">{user.user_name}</strong></Link>!</span>
                   <button 
                     onClick={handleLogout} 
                     className="btn btn-link btn-sm text-danger logout-link"

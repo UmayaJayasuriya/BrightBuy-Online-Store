@@ -1,39 +1,45 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 import bcrypt
 from app.database import get_db
-from app import models
 from app.schemas.auth import LoginRequest
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/login")
-def login_user(login_data: LoginRequest, db: Session = Depends(get_db)):
+def login_user(login_data: LoginRequest, db=Depends(get_db)):
+    cursor = None
     try:
-        user = (
-            db.query(models.User)
-            .filter(
-                (models.User.email == login_data.identifier) |
-                (models.User.user_name == login_data.identifier)
-            )
-            .first()
+        cursor = db.cursor(dictionary=True)
+        
+        # Find user by email or username
+        cursor.execute(
+            "SELECT * FROM user WHERE email = %s OR user_name = %s",
+            (login_data.identifier, login_data.identifier)
         )
+        user = cursor.fetchone()
+        cursor.close()
 
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
 
-        # Verify password using bcrypt (truncate to 72 bytes)
+        # Verify password using bcrypt
         password_bytes = login_data.password.encode('utf-8')[:72]
-        stored_hash = user.password_hash.encode('utf-8')
+        stored_hash = user['password_hash'].encode('utf-8')
         if not bcrypt.checkpw(password_bytes, stored_hash):
             raise HTTPException(status_code=401, detail="Invalid password")
 
         return {
             "message": "Login successful",
-            "user_id": user.user_id,
-            "user_name": user.user_name,
-            "email": user.email
+            "user_id": user['user_id'],
+            "user_name": user['user_name'],
+            "email": user['email']
         }
+    except HTTPException:
+        if cursor:
+            cursor.close()
+        raise
     except Exception as e:
-        print("🔥 Internal Error:", e)
+        if cursor:
+            cursor.close()
+        print(" Internal Error:", e)
         raise HTTPException(status_code=500, detail=str(e))

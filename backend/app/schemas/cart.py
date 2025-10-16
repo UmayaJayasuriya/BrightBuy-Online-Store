@@ -38,5 +38,6 @@ class CartOut(BaseModel):
 
 
 class AddToCartRequest(BaseModel):
+    user_id: int
     variant_id: int
     quantity: int = 1

@@ -38,6 +38,11 @@
   box-shadow: 0 4px 12px var(--shadow-color) !important;
 }
 
+/* Fix sticky order summary z-index to stay below navbar */
+.sticky-top {
+  z-index: 100 !important;
+}
+
 /* Form Enhancements */
 .form-control:focus,
 .form-select:focus {

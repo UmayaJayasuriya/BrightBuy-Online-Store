@@ -1,7 +1,4 @@
-/**
- * Home Page Component
- * Main landing page with carousel, services, and product sections
- */
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
