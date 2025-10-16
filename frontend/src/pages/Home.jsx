@@ -182,50 +182,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Product Banners */}
-      <div className="container-fluid product-banner py-5">
-        <div className="container py-5">
-          <div className="row g-4">
-            <div className="col-lg-4 wow fadeInUp" data-wow-delay="0.1s">
-              <div className="product-banner-item position-relative">
-                <img src="/img/product-banner.jpg" className="img-fluid w-100" alt="Banner" />
-                <div className="product-banner-content position-absolute">
-                  <h3 className="text-white">Laptops</h3>
-                  <p className="text-white">Up to 30% Off</p>
-                  <Link to="/shop" className="btn btn-primary">
-                    Shop Now
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-4 wow fadeInUp" data-wow-delay="0.3s">
-              <div className="product-banner-item position-relative">
-                <img src="/img/product-banner-2.jpg" className="img-fluid w-100" alt="Banner" />
-                <div className="product-banner-content position-absolute">
-                  <h3 className="text-white">Smartphones</h3>
-                  <p className="text-white">Latest Models</p>
-                  <Link to="/shop" className="btn btn-primary">
-                    Shop Now
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <div className="col-lg-4 wow fadeInUp" data-wow-delay="0.5s">
-              <div className="product-banner-item position-relative">
-                <img src="/img/product-banner-3.jpg" className="img-fluid w-100" alt="Banner" />
-                <div className="product-banner-content position-absolute">
-                  <h3 className="text-white">Accessories</h3>
-                  <p className="text-white">Best Deals</p>
-                  <Link to="/shop" className="btn btn-primary">
-                    Shop Now
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Featured Products */}
       <div className="container-fluid product py-5">
         <div className="container py-5">

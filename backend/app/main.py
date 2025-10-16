@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import mysql.connector
 from app.database import get_db
+from app.services import db_export
 
 from app.routes import category
 from app.routes import user 
@@ -11,6 +12,7 @@ from app.routes import contact
 from app.routes import cart
 from app.routes import order
 from app.routes import location
+from app.routes import analytics
 
 app = FastAPI()
 
@@ -46,6 +48,7 @@ app.include_router(contact.router)
 app.include_router(cart.router)
 app.include_router(order.router)
 app.include_router(location.router)
+app.include_router(analytics.router)
 
 
 

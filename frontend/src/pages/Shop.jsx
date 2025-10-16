@@ -19,6 +19,17 @@ const Shop = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Handle category from URL params FIRST - runs on mount and when URL changes
+  useEffect(() => {
+    const category = searchParams.get('category');
+    console.log('📍 Category from URL:', category);
+    if (category) {
+      setSelectedCategory(category);
+    } else {
+      setSelectedCategory('All Category');
+    }
+  }, [searchParams]);
+
   // Fetch categories from backend
   useEffect(() => {
     const fetchCategories = async () => {
@@ -63,14 +74,6 @@ const Shop = () => {
     
     fetchProducts();
   }, [selectedCategory]);
-
-  // Handle category from URL params
-  useEffect(() => {
-    const category = searchParams.get('category');
-    if (category) {
-      setSelectedCategory(category);
-    }
-  }, [searchParams]);
 
   // Apply filters and sorting to products
   useEffect(() => {
