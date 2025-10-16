@@ -28,9 +28,18 @@ import Checkout from './pages/Checkout';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 
+// Admin Components
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminProducts from './pages/admin/AdminProducts';
+import AdminCategories from './pages/admin/AdminCategories';
+import AdminOrders from './pages/admin/AdminOrders';
+//import AdminCategories from './pages/admin/AdminCategories';
+
 // Common Components
 import Spinner from './components/common/Spinner';
 import BackToTop from './components/common/BackToTop';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
 function App() {
   return (
@@ -44,6 +53,7 @@ function App() {
           
           <div className="main-content">
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/shop" element={<Shop />} />
               <Route path="/single/:id" element={<Single />} />
@@ -51,6 +61,66 @@ function App() {
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/contact" element={<Contact />} />
+              
+              {/* Admin Routes */}
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/dashboard" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/users" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminUsers />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/products" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminProducts />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/categories" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminCategories />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/orders" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminOrders />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/categories" 
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <AdminCategories />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Fallback Route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

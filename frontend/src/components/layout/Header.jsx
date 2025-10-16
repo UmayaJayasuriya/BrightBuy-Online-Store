@@ -81,8 +81,9 @@ const Header = () => {
     }
   };
 
-  const handleLoginSuccess = (userData) => {
-    login(userData);
+  // Accept both user data and access token from Login component
+  const handleLoginSuccess = (userData, accessToken) => {
+    login(userData, accessToken);
     console.log('User logged in successfully:', userData.user_name);
   };
 

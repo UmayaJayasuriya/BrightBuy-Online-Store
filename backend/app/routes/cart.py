@@ -1,6 +1,3 @@
-"""
-Cart Routes
-"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
@@ -9,6 +6,16 @@ from app.models.variant import Variant
 from app.models.product import Product
 from app.schemas.cart import CartOut, AddToCartRequest, CartItemOut
 from typing import List
+from datetime import datetime
+from app.models.order import Order, OrderItem, Payment
+from pydantic import BaseModel
+from typing import Optional
+
+# Checkout request schema
+class CheckoutRequest(BaseModel):
+    user_id: int
+    cart_id: int
+    payment_method: Optional[str] = "cash"
 
 router = APIRouter(prefix="/cart", tags=["cart"])
 
@@ -260,3 +267,62 @@ def clear_cart(user_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to clear cart: {str(e)}")
+
+
+# Checkout endpoint
+@router.post("/checkout")
+def checkout_cart(request: CheckoutRequest, db: Session = Depends(get_db)):
+    """Checkout: create order, order_items, payment, clear cart"""
+    try:
+        # Get cart and items
+        cart = db.query(Cart).filter(Cart.cart_id == request.cart_id, Cart.user_id == request.user_id).first()
+        if not cart:
+            raise HTTPException(status_code=404, detail="Cart not found")
+        cart_items = db.query(CartItem).filter(CartItem.cart_id == cart.cart_id).all()
+        if not cart_items:
+            raise HTTPException(status_code=400, detail="Cart is empty")
+
+        # Create order
+        order = Order(
+            cart_id=cart.cart_id,
+            user_id=cart.user_id,
+            order_date=datetime.utcnow(),
+            total_amount=cart.total_amount or 0.0
+        )
+        db.add(order)
+        db.commit()
+        db.refresh(order)
+
+        # Create order items
+        for item in cart_items:
+            variant = db.query(Variant).filter(Variant.variant_id == item.variant_id).first()
+            price = float(variant.price) if variant and variant.price else 0.0
+            order_item = OrderItem(
+                order_id=order.order_id,
+                quantity=item.quantity,
+                price=price
+            )
+            db.add(order_item)
+
+        db.commit()
+
+        # Create payment record
+        payment = Payment(
+            order_id=order.order_id,
+            payment_method=request.payment_method or "cash",
+            payment_status="pending",
+            payment_date=datetime.utcnow()
+        )
+        db.add(payment)
+        db.commit()
+
+        # Clear cart
+        for item in cart_items:
+            db.delete(item)
+        cart.total_amount = 0.0
+        db.commit()
+
+        return {"order_id": order.order_id, "message": "Order placed successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Checkout failed: {str(e)}")

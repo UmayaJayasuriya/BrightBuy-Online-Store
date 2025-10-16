@@ -2,14 +2,19 @@
  * Checkout Page Component
  * Order checkout with billing and payment information
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import './Checkout.css';
 
 const Checkout = () => {
-  const { cartItems, getCartTotal, clearCart } = useCart();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [cartData, setCartData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -24,6 +29,26 @@ const Checkout = () => {
     paymentMethod: 'card'
   });
 
+  // Fetch cart from backend
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (!isAuthenticated || !user) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await axios.get(`http://127.0.0.1:8020/cart/${user.user_id}`);
+        setCartData(response.data);
+      } catch (err) {
+        console.error('Error fetching cart:', err);
+        setError('Failed to load cart');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCart();
+  }, [isAuthenticated, user]);
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -31,15 +56,46 @@ const Checkout = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Process order
-    alert('Order placed successfully!');
-    clearCart();
-    navigate('/');
+    if (!cartData || !cartData.cart_id) {
+      setError('No cart found');
+      return;
+    }
+    setSubmitting(true);
+    setError('');
+    try {
+      // Call backend checkout endpoint
+      const payload = {
+        user_id: user?.user_id,
+        cart_id: cartData.cart_id,
+        payment_method: formData.paymentMethod
+      };
+      const response = await axios.post('/cart/checkout', payload);
+      alert(response.data.message || 'Order placed successfully!');
+      navigate('/');
+    } catch (err) {
+      console.error('Checkout error:', err);
+      setError(err.response?.data?.detail || err.message || 'Checkout failed');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  if (cartItems.length === 0) {
+  if (!isAuthenticated) {
+    return (
+      <div className="container py-5 text-center">
+        <h3>Please login to checkout</h3>
+        <Link to="/" className="btn btn-primary mt-3">Go to Home</Link>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return <div className="container py-5 text-center"><div className="spinner-border"></div></div>;
+  }
+
+  if (!cartData || !cartData.cart_items || cartData.cart_items.length === 0) {
     return (
       <div className="container py-5 text-center">
         <h3>Your cart is empty</h3>
@@ -224,12 +280,13 @@ const Checkout = () => {
               <div className="col-lg-4">
                 <div className="bg-light rounded p-4 sticky-top" style={{ top: '100px' }}>
                   <h4 className="mb-4">Your Order</h4>
+                  {error && <div className="alert alert-danger">{error}</div>}
                   <div className="order-items">
-                    {cartItems.map((item) => (
-                      <div key={item.id} className="d-flex justify-content-between mb-3">
+                    {cartData && cartData.cart_items && cartData.cart_items.map((item) => (
+                      <div key={item.cart_item_id} className="d-flex justify-content-between mb-3">
                         <div>
-                          <h6 className="mb-0">{item.name}</h6>
-                          <small className="text-muted">Qty: {item.quantity}</small>
+                          <h6 className="mb-0">{item.product_name}</h6>
+                          <small className="text-muted">{item.variant_name} - Qty: {item.quantity}</small>
                         </div>
                         <strong>${(item.price * item.quantity).toFixed(2)}</strong>
                       </div>
@@ -238,7 +295,7 @@ const Checkout = () => {
                   <hr />
                   <div className="d-flex justify-content-between mb-2">
                     <span>Subtotal:</span>
-                    <strong>${getCartTotal().toFixed(2)}</strong>
+                    <strong>${cartData ? Number(cartData.total_amount).toFixed(2) : '0.00'}</strong>
                   </div>
                   <div className="d-flex justify-content-between mb-2">
                     <span>Shipping:</span>
@@ -246,15 +303,15 @@ const Checkout = () => {
                   </div>
                   <div className="d-flex justify-content-between mb-3">
                     <span>Tax (10%):</span>
-                    <strong>${(getCartTotal() * 0.1).toFixed(2)}</strong>
+                    <strong>${cartData ? (Number(cartData.total_amount) * 0.1).toFixed(2) : '0.00'}</strong>
                   </div>
                   <hr />
                   <div className="d-flex justify-content-between mb-4">
                     <h5>Total:</h5>
-                    <h5 className="text-primary">${(getCartTotal() * 1.1).toFixed(2)}</h5>
+                    <h5 className="text-primary">${cartData ? (Number(cartData.total_amount) * 1.1).toFixed(2) : '0.00'}</h5>
                   </div>
-                  <button type="submit" className="btn btn-primary w-100 rounded-pill py-3">
-                    Place Order
+                  <button type="submit" className="btn btn-primary w-100 rounded-pill py-3" disabled={submitting || !cartData}>
+                    {submitting ? 'Placing Order...' : 'Place Order'}
                   </button>
                 </div>
               </div>

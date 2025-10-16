@@ -1,0 +1,37 @@
+/* Admin Navigation Styles */
+.admin-nav-link {
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.admin-nav-link i {
+  color: #ffd700;
+}
+
+.admin-dropdown {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  min-width: 220px;
+  padding: 0.5rem 0;
+}
+
+.admin-dropdown .dropdown-item {
+  color: #2c3e50;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  transition: background 0.2s;
+}
+
+.admin-dropdown .dropdown-item:hover {
+  background: #f8f9fa;
+  color: #667eea;
+}
+
+.admin-dropdown .dropdown-divider {
+  border-top: 1px solid #e9ecef;
+  margin: 0.5rem 0;
+}

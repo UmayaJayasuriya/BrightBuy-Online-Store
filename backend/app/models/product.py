@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -9,7 +9,7 @@ class Product(Base):
     product_name = Column(String(100), nullable=False)
     category_id = Column(Integer, ForeignKey("category.category_id"), nullable=False)
     description = Column(String(255), nullable=True)
-    
+    # stock_quantity removed to match SQL schema
     # Relationships
     category = relationship("Category", back_populates="products")
     variants = relationship("Variant", back_populates="product")

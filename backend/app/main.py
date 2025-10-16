@@ -10,13 +10,17 @@ from app.routes import auth
 from app.routes import product
 from app.routes import contact
 from app.routes import cart
+from app.routes import admin
 
 app = FastAPI()
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,6 +41,7 @@ app.include_router(auth.router)
 app.include_router(product.router)
 app.include_router(contact.router)
 app.include_router(cart.router)
+app.include_router(admin.router)
 
 
 

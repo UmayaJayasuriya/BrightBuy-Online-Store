@@ -1,0 +1,9 @@
+{
+  "short_name": "BrightBuy",
+  "name": "BrightBuy Online Store",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff"
+}

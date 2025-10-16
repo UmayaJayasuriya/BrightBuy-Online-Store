@@ -34,11 +34,17 @@ const Login = ({ isOpen, onClose, onLoginSuccess, onSwitchToSignUp }) => {
       });
 
       if (response.data) {
-        // Store user data in localStorage
-        localStorage.setItem('user', JSON.stringify(response.data));
-        onLoginSuccess(response.data);
+        const { access_token, ...userData } = response.data;
+        
+        // Pass both user data and token to the auth context
+        onLoginSuccess(userData, access_token);
         onClose();
         setFormData({ identifier: '', password: '' });
+        
+        // Show success message if user is admin
+        if (userData.is_admin) {
+          console.log('Admin user logged in successfully');
+        }
       }
     } catch (err) {
       setError(err.response?.data?.detail || 'Login failed. Please try again.');

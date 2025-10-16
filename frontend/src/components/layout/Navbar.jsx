@@ -1,16 +1,18 @@
 /**
  * Navbar Component
- * Main navigation menu with category dropdown
+ * Main navigation menu with category dropdown and admin links
  */
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
 
 const Navbar = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [categories, setCategories] = useState([]);
+  const { hasAdminPrivileges } = useAuth();
 
   const navRef = useRef(null);
 
@@ -78,7 +80,7 @@ const Navbar = () => {
             {/* Mobile Logo */}
             <Link to="/" className="navbar-brand d-block d-lg-none">
               <h1 className="display-5 text-secondary m-0">
-                <i className="fas fa-shopping-bag text-white me-2"></i>Electro
+                <i className="fas fa-shopping-bag text-white me-2"></i>BrightBuy
               </h1>
             </Link>
 
@@ -129,6 +131,40 @@ const Navbar = () => {
                 <NavLink to="/contact" className="nav-item nav-link me-2">
                   Contact
                 </NavLink>
+
+                {/* Admin Dropdown - Only visible to admin users */}
+                {hasAdminPrivileges && (
+                  <div className="nav-item dropdown">
+                    <a
+                      href="#admin"
+                      className="nav-link dropdown-toggle admin-nav-link"
+                      data-bs-toggle="dropdown"
+                    >
+                      <i className="fas fa-cogs me-1"></i>Admin
+                    </a>
+                    <div className="dropdown-menu admin-dropdown m-0">
+                      <Link to="/admin/dashboard" className="dropdown-item">
+                        <i className="fas fa-tachometer-alt me-2"></i>Dashboard
+                      </Link>
+                      <Link to="/admin/users" className="dropdown-item">
+                        <i className="fas fa-users me-2"></i>Manage Users
+                      </Link>
+                      <Link to="/admin/products" className="dropdown-item">
+                        <i className="fas fa-boxes me-2"></i>Manage Products
+                      </Link>
+                      <div className="dropdown-divider"></div>
+                      <Link to="/admin/categories" className="dropdown-item">
+                        <i className="fas fa-tags me-2"></i>Categories
+                      </Link>
+                      <Link to="/admin/orders" className="dropdown-item">
+                        <i className="fas fa-receipt me-2"></i>Orders
+                      </Link>
+                      <Link to="/admin/analytics" className="dropdown-item">
+                        <i className="fas fa-chart-bar me-2"></i>Analytics
+                      </Link>
+                    </div>
+                  </div>
+                )}
 
                 {/* Mobile Category Dropdown */}
                 <div className="nav-item dropdown d-block d-lg-none mb-3">
