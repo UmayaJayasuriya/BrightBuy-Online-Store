@@ -29,6 +29,7 @@ import Payment from './pages/Payment';
 import Profile from './pages/Profile';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
+import Admin from './pages/Admin';
 
 // Common Components
 import Spinner from './components/common/Spinner';
@@ -55,6 +56,7 @@ function App() {
               <Route path="/payment" element={<Payment />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

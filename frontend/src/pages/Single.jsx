@@ -15,7 +15,7 @@ const Single = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, addToWishlist } = useCart();
-  const { isAuthenticated, user, openLoginModal } = useAuth();
+  const { isAuthenticated, user, openLoginModal, isAdmin } = useAuth();
   const [productData, setProductData] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -23,6 +23,7 @@ const Single = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [addingToCart, setAddingToCart] = useState(false);
+  const [deletingVariant, setDeletingVariant] = useState(false);
 
   // Fetch product with variants
   useEffect(() => {
@@ -114,6 +115,56 @@ const Single = () => {
   const handleVariantSelect = (variant) => {
     setSelectedVariant(variant);
     setQuantity(1); // Reset quantity when changing variant
+  };
+
+  const handleDeleteVariant = async () => {
+    if (!selectedVariant) {
+      alert('Please select a variant to delete');
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete the variant "${selectedVariant.variant_name}"?\n\nThis action cannot be undone.`
+    );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    setDeletingVariant(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(
+        `http://127.0.0.1:8020/admin/variants/${selectedVariant.variant_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      alert(`Variant "${selectedVariant.variant_name}" deleted successfully!`);
+      
+      // Refresh the product data to show updated variants
+      const response = await axios.get(`http://127.0.0.1:8020/products/${id}/variants/`);
+      setProductData(response.data);
+      
+      // Select first remaining variant or null if no variants left
+      if (response.data.variants && response.data.variants.length > 0) {
+        setSelectedVariant(response.data.variants[0]);
+      } else {
+        setSelectedVariant(null);
+        alert('All variants have been deleted. Redirecting to shop...');
+        setTimeout(() => navigate('/shop'), 2000);
+      }
+      
+    } catch (err) {
+      console.error('Error deleting variant:', err);
+      const errorMessage = err.response?.data?.detail || 'Failed to delete variant. Please try again.';
+      alert(errorMessage);
+    } finally {
+      setDeletingVariant(false);
+    }
   };
 
   if (loading) {
@@ -338,15 +389,26 @@ const Single = () => {
 
                 {/* Action Buttons */}
                 <div className="d-flex gap-3 mb-4">
-                  <button
-                    className="btn btn-primary btn-lg flex-grow-1"
-                    onClick={handleAddToCart}
-                    disabled={!selectedVariant || selectedVariant.quantity === 0 || addingToCart}
-                  >
-                    <i className="fas fa-shopping-cart me-2"></i>
-                    {addingToCart ? 'Adding...' : 
-                     selectedVariant && selectedVariant.quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
-                  </button>
+                  {isAdmin ? (
+                    <button
+                      className="btn btn-danger btn-lg flex-grow-1"
+                      onClick={handleDeleteVariant}
+                      disabled={!selectedVariant || deletingVariant}
+                    >
+                      <i className="fas fa-trash me-2"></i>
+                      {deletingVariant ? 'Deleting...' : 'Delete Variant'}
+                    </button>
+                  ) : (
+                    <button
+                      className="btn btn-primary btn-lg flex-grow-1"
+                      onClick={handleAddToCart}
+                      disabled={!selectedVariant || selectedVariant.quantity === 0 || addingToCart}
+                    >
+                      <i className="fas fa-shopping-cart me-2"></i>
+                      {addingToCart ? 'Adding...' : 
+                       selectedVariant && selectedVariant.quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

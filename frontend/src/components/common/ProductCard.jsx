@@ -5,10 +5,12 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
   const { addToWishlist } = useCart();
+  const { isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleViewProduct = (e) => {
@@ -78,8 +80,8 @@ const ProductCard = ({ product }) => {
               onClick={handleViewProduct}
               className="btn btn-primary rounded-pill flex-grow-1"
             >
-              <i className="fas fa-eye me-2"></i>
-              View Product
+              <i className={`fas ${isAdmin ? 'fa-edit' : 'fa-eye'} me-2`}></i>
+              {isAdmin ? 'Edit Product' : 'View Product'}
             </button>
             <button
               onClick={handleAddToWishlist}

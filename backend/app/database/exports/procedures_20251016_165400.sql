@@ -1,5 +1,5 @@
 -- ============================================
--- MedSync Stored Procedures Export
+-- Brightbuy Stored Procedures Export
 -- Generated: 2025-10-16 16:54:00
 -- ============================================
 

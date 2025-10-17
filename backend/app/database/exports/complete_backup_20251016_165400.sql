@@ -1,10 +1,10 @@
 -- ============================================
--- MedSync Complete Database Backup
+-- Brightbuy Complete Database Backup
 -- Generated: 2025-10-16 16:54:00
 -- ============================================
 
 -- ============================================
--- MedSync Schema (DDL) Export
+-- Brightbuy  Schema (DDL) Export
 -- Generated: 2025-10-16 16:54:00
 -- ============================================
 
@@ -270,7 +270,7 @@ CREATE TABLE `variant_attribute_value` (
 
 
 -- ============================================
--- MedSync Stored Procedures Export
+-- Brightbuy  Stored Procedures Export
 -- Generated: 2025-10-16 16:54:00
 -- ============================================
 
@@ -348,7 +348,7 @@ DELIMITER ;
 
 
 -- ============================================
--- MedSync Functions Export
+-- Brightbuy  Functions Export
 -- Generated: 2025-10-16 16:54:00
 -- ============================================
 
@@ -362,7 +362,7 @@ DELIMITER ;
 
 
 -- ============================================
--- MedSync Triggers Export
+-- Brightbuy  Triggers Export
 -- Generated: 2025-10-16 16:54:00
 -- ============================================
 
@@ -431,7 +431,7 @@ DELIMITER ;
 
 
 -- ============================================
--- MedSync Views Export
+-- Brightbuy  Views Export
 -- Generated: 2025-10-16 16:54:00
 -- ============================================
 
@@ -442,7 +442,7 @@ USE `brightbuy`;
 
 
 -- ============================================
--- MedSync Data (DML) Export
+-- Brightbuy  Data (DML) Export
 -- Generated: 2025-10-16 16:54:00
 -- ============================================
 
