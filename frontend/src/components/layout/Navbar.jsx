@@ -120,9 +120,6 @@ const Navbar = () => {
                     <Link to="/checkout" className="dropdown-item">
                       Checkout
                     </Link>
-                    <Link to="/404" className="dropdown-item">
-                      404 Page
-                    </Link>
                   </div>
                 </div>
 
