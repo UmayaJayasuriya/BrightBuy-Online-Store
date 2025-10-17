@@ -18,37 +18,17 @@ const Bestseller = () => {
     const fetchBestsellerProducts = async () => {
       try {
         setLoading(true);
-        // Fetch products from different categories to get variety
-        const categories = [
-          'Laptops',
-          'Smart Phones',
-          'Headphones & Earphones',
-          'Tablets & E-Readers',
-          'Mouse & Keyboards',
-          'Smart Watches & Wearables',
-          'Cameras',
-          'Gaming Consoles',
-          'Speakers',
-          'Toys & Gadgets'
-        ];
-
-        const allProducts = [];
+        // Fetch actual bestselling products from the backend
+        // This endpoint returns top 10 products by total quantity sold
+        const response = await axios.get('http://127.0.0.1:8020/products/bestsellers/');
         
-        // Fetch 1 product from each category
-        for (const category of categories) {
-          try {
-            const response = await axios.get(`http://127.0.0.1:8020/products/?category_name=${encodeURIComponent(category)}`);
-            if (response.data && response.data.length > 0) {
-              // Get the first product from this category
-              allProducts.push(response.data[0]);
-            }
-          } catch (err) {
-            console.error(`Error fetching products from category ${category}:`, err);
-          }
+        if (response.data && response.data.length > 0) {
+          setBestsellerProducts(response.data);
+          setError(null);
+        } else {
+          setBestsellerProducts([]);
+          setError('No bestseller data available yet. Products will appear here once orders are placed.');
         }
-        
-        setBestsellerProducts(allProducts);
-        setError(null);
       } catch (err) {
         console.error('Error fetching bestseller products:', err);
         setError('Failed to load bestseller products');
