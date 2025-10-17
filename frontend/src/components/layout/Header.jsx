@@ -101,12 +101,6 @@ const Header = () => {
   const handleCategoryChange = (e) => {
     const category = e.target.value;
     setSelectedCategory(category);
-    // Navigate to shop page with selected category
-    if (category && category !== 'All Categories') {
-      navigate(`/shop?category=${encodeURIComponent(category)}`);
-    } else {
-      navigate('/shop');
-    }
   };
 
   const handleWishlistClick = (e) => {

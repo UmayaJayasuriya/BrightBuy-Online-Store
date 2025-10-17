@@ -15,18 +15,26 @@ const Shop = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All Category');
+  const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Handle category from URL params FIRST - runs on mount and when URL changes
+  // Handle category and search from URL params FIRST - runs on mount and when URL changes
   useEffect(() => {
     const category = searchParams.get('category');
+    const search = searchParams.get('search');
     console.log('📍 Category from URL:', category);
+    console.log('🔍 Search from URL:', search);
     if (category) {
       setSelectedCategory(category);
     } else {
       setSelectedCategory('All Category');
+    }
+    if (search) {
+      setSearchQuery(search);
+    } else {
+      setSearchQuery('');
     }
   }, [searchParams]);
 
@@ -79,13 +87,25 @@ const Shop = () => {
   useEffect(() => {
     let filtered = [...products];
 
+    // Apply search filter
+    if (searchQuery) {
+      filtered = filtered.filter(product => {
+        const query = searchQuery.toLowerCase();
+        const productName = product.product_name.toLowerCase();
+        const categoryName = product.category?.category_name?.toLowerCase() || '';
+        
+        // Search in product name and category name only (not description)
+        return productName.includes(query) || categoryName.includes(query);
+      });
+    }
+
     // Apply sorting
     if (sortBy === 'name') {
       filtered.sort((a, b) => a.product_name.localeCompare(b.product_name));
     }
 
     setFilteredProducts(filtered);
-  }, [products, sortBy]);
+  }, [products, searchQuery, sortBy]);
 
   return (
     <div className="shop-page">
@@ -157,6 +177,24 @@ const Shop = () => {
 
             {/* Products Grid */}
             <div className="col-lg-9">
+              {/* Search Query Display */}
+              {searchQuery && (
+                <div className="alert alert-info d-flex justify-content-between align-items-center mb-3">
+                  <span>
+                    Search results for: <strong>"{searchQuery}"</strong>
+                  </span>
+                  <button 
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => {
+                      setSearchQuery('');
+                      window.history.pushState({}, '', '/shop');
+                    }}
+                  >
+                    Clear Search
+                  </button>
+                </div>
+              )}
+
               {/* Toolbar */}
               <div className="shop-toolbar d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded">
                 <div>
