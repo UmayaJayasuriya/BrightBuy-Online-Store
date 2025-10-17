@@ -11,7 +11,7 @@ import SignUp from '../common/SignUp';
 import './Header.css';
 
 const Header = () => {
-  const { isAuthenticated, user, login, logout, registerLoginModalHandler } = useAuth();
+  const { isAuthenticated, user, isAdmin, login, logout, registerLoginModalHandler } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -232,7 +232,12 @@ const Header = () => {
             <div className="col-12 text-end">
               <small className="text-muted">
                 <span className="user-greeting">
-                  <span>Welcome back, <Link to="/profile" className="text-decoration-none"><strong className="text-primary">{user.user_name}</strong></Link>!</span>
+                  <span>
+                    Welcome back, <Link to="/profile" className="text-decoration-none"><strong className="text-primary">{user.user_name}</strong></Link>!
+                    {isAdmin && (
+                      <> | <Link to="/admin" className="text-decoration-none text-danger fw-bold">Admin Dashboard</Link></>
+                    )}
+                  </span>
                   <button 
                     onClick={handleLogout} 
                     className="btn btn-link btn-sm text-danger logout-link"

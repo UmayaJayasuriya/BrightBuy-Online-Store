@@ -2,7 +2,7 @@
  * Authentication Context
  * Manages user authentication state throughout the application
  */
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext();
 
@@ -49,15 +49,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const registerLoginModalHandler = (callback) => {
+  const registerLoginModalHandler = useCallback((callback) => {
     setLoginModalCallback(() => callback);
-  };
+  }, []);
 
   const isAuthenticated = !!user;
+  const isAdmin = user?.user_type === 'admin';
 
   const value = {
     user,
     isAuthenticated,
+  isAdmin,
     isLoading,
     login,
     logout,

@@ -13,6 +13,7 @@ from app.routes import cart
 from app.routes import order
 from app.routes import location
 from app.routes import analytics
+from app.routes import admin
 
 app = FastAPI()
 
@@ -49,6 +50,7 @@ app.include_router(cart.router)
 app.include_router(order.router)
 app.include_router(location.router)
 app.include_router(analytics.router)
+app.include_router(admin.router)
 
 
 
