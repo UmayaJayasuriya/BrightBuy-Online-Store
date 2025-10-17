@@ -1,0 +1,88 @@
+/* Admin Dashboard Styles */
+
+.admin-dashboard {
+  min-height: 600px;
+  padding: 2rem 0;
+}
+
+.admin-dashboard h1 {
+  color: #2c3e50;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+.admin-dashboard h2 {
+  color: #34495e;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 0.5rem;
+}
+
+.nav-tabs .nav-link {
+  cursor: pointer;
+  color: #555;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+.nav-tabs .nav-link.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+  background-color: transparent;
+}
+
+.table {
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.table thead {
+  background-color: #f8f9fa;
+}
+
+.table thead th {
+  color: #2c3e50;
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card-title {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.badge {
+  padding: 0.4em 0.8em;
+  font-size: 0.85rem;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.alert {
+  border-radius: 8px;
+  border: none;
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.3rem;
+  color: #3498db;
+}

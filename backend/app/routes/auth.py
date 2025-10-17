@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 import bcrypt
 from app.database import get_db
 from app.schemas.auth import LoginRequest
+from app.security import create_access_token
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -28,11 +29,22 @@ def login_user(login_data: LoginRequest, db=Depends(get_db)):
         if not bcrypt.checkpw(password_bytes, stored_hash):
             raise HTTPException(status_code=401, detail="Invalid password")
 
+        # Create JWT token including role
+        token = create_access_token({
+            "sub": str(user['user_id']),
+            "user_name": user['user_name'],
+            "email": user['email'],
+            "user_type": user.get('user_type', 'customer')
+        })
+
         return {
             "message": "Login successful",
             "user_id": user['user_id'],
             "user_name": user['user_name'],
-            "email": user['email']
+            "email": user['email'],
+            "user_type": user.get('user_type', 'customer'),
+            "access_token": token,
+            "token_type": "bearer"
         }
     except HTTPException:
         if cursor:
