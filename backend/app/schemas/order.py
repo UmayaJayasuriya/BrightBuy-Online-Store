@@ -49,6 +49,8 @@ class OrderOut(BaseModel):
     user_id: int
     order_date: datetime
     total_amount: float
+    estimated_delivery_date: Optional[str] = None  # ISO date string
+    estimated_delivery_days: Optional[int] = None  # Number of days
     order_items: List[OrderItemOut] = []
 
     class Config:

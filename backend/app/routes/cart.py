@@ -289,3 +289,96 @@ def clear_cart(user_id: int, db=Depends(get_db)):
         if cursor:
             cursor.close()
         raise HTTPException(status_code=500, detail=f"Error clearing cart: {str(e)}")
+
+
+@router.get("/delivery-estimate/{user_id}")
+def get_delivery_estimate(
+    user_id: int,
+    delivery_method: str = Query(..., description="home_delivery or store_pickup"),
+    city: Optional[str] = Query(None, description="City name for home delivery"),
+    db=Depends(get_db)
+):
+    """
+    Calculate estimated delivery days for user's cart
+    Based on delivery method, city type, and stock availability
+    """
+    cursor = None
+    try:
+        cursor = db.cursor(dictionary=True)
+        
+        # Get cart
+        cursor.execute("SELECT cart_id FROM cart WHERE user_id = %s", (user_id,))
+        cart = cursor.fetchone()
+        
+        if not cart:
+            return {"estimated_days": None, "message": "Cart not found"}
+        
+        # Get cart items with stock quantities
+        cursor.execute(
+            """SELECT ci.variant_id, ci.quantity, v.quantity as stock_quantity
+               FROM cart_item ci
+               JOIN variant v ON ci.variant_id = v.variant_id
+               WHERE ci.cart_id = %s""",
+            (cart['cart_id'],)
+        )
+        cart_items = cursor.fetchall()
+        
+        if not cart_items:
+            return {"estimated_days": None, "message": "Cart is empty"}
+        
+        estimated_days = 0
+        has_low_stock = False
+        is_main_city = None
+        
+        if delivery_method == "store_pickup":
+            estimated_days = 2
+        elif delivery_method == "home_delivery":
+            # Check for low stock (quantity < 10)
+            has_low_stock = any(item['stock_quantity'] < 10 for item in cart_items)
+            
+            if not city:
+                # Return range-based estimate when no city selected
+                main_city_days = 5 + (3 if has_low_stock else 0)
+                other_city_days = 7 + (3 if has_low_stock else 0)
+                return {
+                    "estimated_days": None,
+                    "delivery_method": delivery_method,
+                    "has_low_stock": has_low_stock,
+                    "main_city_estimate": main_city_days,
+                    "other_city_estimate": other_city_days,
+                    "message": "Select city for exact estimate"
+                }
+            
+            # Check if city is a main city
+            cursor.execute(
+                "SELECT Is_main_city FROM location WHERE city = %s",
+                (city,)
+            )
+            location = cursor.fetchone()
+            
+            if not location:
+                # Default to non-main city if not found
+                base_days = 7
+                is_main_city = False
+            else:
+                is_main_city = location['Is_main_city']
+                base_days = 5 if is_main_city else 7
+            
+            if has_low_stock:
+                base_days += 3
+            
+            estimated_days = base_days
+        
+        cursor.close()
+        
+        return {
+            "estimated_days": estimated_days,
+            "delivery_method": delivery_method,
+            "has_low_stock": has_low_stock,
+            "is_main_city": is_main_city
+        }
+        
+    except Exception as e:
+        if cursor:
+            cursor.close()
+        raise HTTPException(status_code=500, detail=f"Error calculating delivery estimate: {str(e)}")

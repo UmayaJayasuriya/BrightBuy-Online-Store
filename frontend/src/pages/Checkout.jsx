@@ -17,6 +17,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
   const [processingOrder, setProcessingOrder] = useState(false);
   const [error, setError] = useState('');
+  const [deliveryEstimate, setDeliveryEstimate] = useState(null);
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -62,6 +63,31 @@ const Checkout = () => {
 
     fetchData();
   }, [isAuthenticated, user]);
+
+  // Fetch delivery estimate when delivery method or city changes
+  useEffect(() => {
+    const fetchDeliveryEstimate = async () => {
+      if (!user || !formData.deliveryMethod) return;
+
+      try {
+        let url = `http://127.0.0.1:8020/cart/delivery-estimate/${user.user_id}?delivery_method=${formData.deliveryMethod}`;
+        
+        if (formData.deliveryMethod === 'home_delivery' && formData.city) {
+          url += `&city=${encodeURIComponent(formData.city)}`;
+        }
+
+        console.log('Fetching delivery estimate from:', url);
+        const response = await axios.get(url);
+        console.log('Delivery estimate response:', response.data);
+        setDeliveryEstimate(response.data);
+      } catch (err) {
+        console.error('Error fetching delivery estimate:', err);
+        setDeliveryEstimate(null);
+      }
+    };
+
+    fetchDeliveryEstimate();
+  }, [user, formData.deliveryMethod, formData.city]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -317,10 +343,35 @@ const Checkout = () => {
                     <label className="form-check-label" htmlFor="home_delivery">
                       <strong>Home Delivery</strong>
                       <br />
-                      <small className="text-muted">
-                        Main cities: 5 days (8 days if out of stock)<br />
-                        Other cities: 7 days (10 days if out of stock)
-                      </small>
+                      {formData.deliveryMethod === 'home_delivery' && deliveryEstimate && deliveryEstimate.estimated_days !== null && deliveryEstimate.estimated_days !== undefined ? (
+                        // Exact estimate when city is selected
+                        <small className="text-muted">
+                          <strong className="text-primary">Estimated: {deliveryEstimate.estimated_days} days</strong>
+                          {deliveryEstimate.has_low_stock && (
+                            <span className="text-warning ms-2">
+                              <i className="fas fa-exclamation-triangle"></i> Low stock items
+                            </span>
+                          )}
+                        </small>
+                      ) : formData.deliveryMethod === 'home_delivery' && deliveryEstimate && deliveryEstimate.main_city_estimate ? (
+                        // Range estimate when no city selected but we have stock info
+                        <small className="text-muted">
+                          <span className="text-primary">Main cities: {deliveryEstimate.main_city_estimate} days</span>
+                          <br />
+                          <span className="text-primary">Other cities: {deliveryEstimate.other_city_estimate} days</span>
+                          {deliveryEstimate.has_low_stock && (
+                            <span className="text-warning d-block mt-1">
+                              <i className="fas fa-exclamation-triangle"></i> Includes 3 extra days for low stock items
+                            </span>
+                          )}
+                        </small>
+                      ) : (
+                        // Default message while loading
+                        <small className="text-muted">
+                          Main cities: 5 days<br />
+                          Other cities: 7 days
+                        </small>
+                      )}
                     </label>
                   </div>
                   <div className="form-check p-3 border rounded">
@@ -336,15 +387,45 @@ const Checkout = () => {
                     <label className="form-check-label" htmlFor="store_pickup">
                       <strong>Store Pickup</strong>
                       <br />
-                      <small className="text-muted">Ready for pickup in 2 business days</small>
+                      {formData.deliveryMethod === 'store_pickup' && deliveryEstimate && deliveryEstimate.estimated_days !== null && deliveryEstimate.estimated_days !== undefined ? (
+                        <small className="text-muted">
+                          <strong className="text-primary">Ready in {deliveryEstimate.estimated_days} business days</strong>
+                        </small>
+                      ) : (
+                        <small className="text-muted">Ready for pickup in 2 business days</small>
+                      )}
                     </label>
                   </div>
                 </div>
 
-                {formData.deliveryMethod === 'home_delivery' && (
-                  <div className="alert alert-info">
-                    <i className="fas fa-info-circle me-2"></i>
-                    Items will be delivered to your registered address. Delivery time depends on stock availability and your city.
+                {formData.deliveryMethod === 'home_delivery' && deliveryEstimate && deliveryEstimate.estimated_days && (
+                  <div className={`alert ${deliveryEstimate.has_low_stock ? 'alert-warning' : 'alert-info'}`}>
+                    <i className={`fas ${deliveryEstimate.has_low_stock ? 'fa-exclamation-triangle' : 'fa-info-circle'} me-2`}></i>
+                    {deliveryEstimate.has_low_stock ? (
+                      <>
+                        Some items in your cart have low stock. Your order will be delivered in approximately <strong>{deliveryEstimate.estimated_days} days</strong> {deliveryEstimate.is_main_city ? '(main city)' : '(other city)'}.
+                      </>
+                    ) : (
+                      <>
+                        Your order will be delivered in approximately <strong>{deliveryEstimate.estimated_days} days</strong> {deliveryEstimate.is_main_city ? '(main city)' : '(other city)'}.
+                      </>
+                    )}
+                  </div>
+                )}
+                
+                {formData.deliveryMethod === 'home_delivery' && !formData.city && deliveryEstimate && deliveryEstimate.has_low_stock !== undefined && (
+                  <div className={`alert ${deliveryEstimate.has_low_stock ? 'alert-warning' : 'alert-info'}`}>
+                    <i className={`fas ${deliveryEstimate.has_low_stock ? 'fa-exclamation-triangle' : 'fa-info-circle'} me-2`}></i>
+                    {deliveryEstimate.has_low_stock ? (
+                      <>
+                        <strong>Low stock detected!</strong> Please select your city to see the exact delivery time.
+                        Expected: {deliveryEstimate.main_city_estimate} days (main cities) or {deliveryEstimate.other_city_estimate} days (other cities).
+                      </>
+                    ) : (
+                      <>
+                        Please select your city to see the exact delivery time.
+                      </>
+                    )}
                   </div>
                 )}
 

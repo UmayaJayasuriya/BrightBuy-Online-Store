@@ -148,6 +148,7 @@ def create_order_from_cart(request: CreateOrderRequest):
         
         # Calculate estimated delivery date
         estimated_date = None
+        estimated_days = 0
         is_main_city = False
         
         if request.delivery_method == "home_delivery" and address_id:
@@ -163,12 +164,26 @@ def create_order_from_cart(request: CreateOrderRequest):
             if location_info:
                 is_main_city = location_info['Is_main_city']
             
-            # Calculate delivery days
+            # Calculate base delivery days based on city type
             base_days = 5 if is_main_city else 7
+            
+            # Check for low stock variants (quantity < 10)
+            has_low_stock = False
+            for cart_item in cart_items:
+                if cart_item['stock_quantity'] < 10:
+                    has_low_stock = True
+                    break
+            
+            # Add 3 days if any variant has low stock
+            if has_low_stock:
+                base_days += 3
+            
+            estimated_days = base_days
             estimated_date = (datetime.utcnow() + timedelta(days=base_days)).date()
             
         elif request.delivery_method == "store_pickup":
             # Store pickup: 2 days
+            estimated_days = 2
             estimated_date = (datetime.utcnow() + timedelta(days=2)).date()
         
         # Create delivery record
@@ -219,6 +234,8 @@ def create_order_from_cart(request: CreateOrderRequest):
             user_id=request.user_id,
             order_date=datetime.utcnow(),
             total_amount=total_amount,
+            estimated_delivery_date=estimated_date.isoformat() if estimated_date else None,
+            estimated_delivery_days=estimated_days if estimated_days > 0 else None,
             order_items=order_items_out
         )
         
