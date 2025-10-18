@@ -1,13 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 import mysql.connector
-
 from app.database import get_db
 from app.security import get_admin_user
 
-
 router = APIRouter(prefix="/admin", tags=["Admin"])
-
 
 @router.get("/users", response_model=List[dict])
 def list_users(db: mysql.connector.MySQLConnection = Depends(get_db), admin=Depends(get_admin_user)):
@@ -20,7 +17,6 @@ def list_users(db: mysql.connector.MySQLConnection = Depends(get_db), admin=Depe
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursor.close()
-
 
 @router.get("/orders", response_model=List[dict])
 def list_orders(db: mysql.connector.MySQLConnection = Depends(get_db), admin=Depends(get_admin_user)):
@@ -43,6 +39,29 @@ def list_orders(db: mysql.connector.MySQLConnection = Depends(get_db), admin=Dep
     finally:
         cursor.close()
 
+@router.get("/orders/{order_id}/items", response_model=List[dict])
+def get_order_items(order_id: int, db: mysql.connector.MySQLConnection = Depends(get_db), admin=Depends(get_admin_user)):
+    """Get all items (products/variants) for a specific order"""
+    cursor = db.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            """
+            SELECT oi.order_item_id, oi.order_id, oi.quantity, oi.price,
+                   v.variant_id, v.variant_name, v.SKU,
+                   p.product_id, p.product_name
+            FROM order_item oi
+            LEFT JOIN variant v ON oi.variant_id = v.variant_id
+            LEFT JOIN product p ON v.product_id = p.product_id
+            WHERE oi.order_id = %s
+            """,
+            (order_id,)
+        )
+        items = cursor.fetchall()
+        return items
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
 
 @router.post("/products", response_model=dict, status_code=201)
 def create_product(
@@ -67,7 +86,6 @@ def create_product(
     finally:
         cursor.close()
 
-
 @router.delete("/products/{product_id}", response_model=dict)
 def delete_product(
     product_id: int,
@@ -89,7 +107,6 @@ def delete_product(
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursor.close()
-
 
 @router.put("/variants/{variant_id}/quantity", response_model=dict)
 def update_variant_quantity(
@@ -114,7 +131,6 @@ def update_variant_quantity(
     finally:
         cursor.close()
 
-
 @router.delete("/variants/{variant_id}", response_model=dict)
 def delete_variant(
     variant_id: int,
@@ -129,18 +145,15 @@ def delete_variant(
             (variant_id,)
         )
         result = cursor.fetchone()
-        
         if result and result['count'] > 0:
             raise HTTPException(
                 status_code=400,
                 detail="Cannot delete variant: it is referenced in existing orders"
             )
-        
         # Delete the variant
         cursor.execute("DELETE FROM variant WHERE variant_id = %s", (variant_id,))
         if cursor.rowcount == 0:
             raise HTTPException(status_code=404, detail="Variant not found")
-        
         db.commit()
         return {"deleted": True, "variant_id": variant_id}
     except HTTPException:
@@ -160,3 +173,4 @@ def delete_variant(
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursor.close()
+
