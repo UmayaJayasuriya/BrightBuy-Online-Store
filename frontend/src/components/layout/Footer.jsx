@@ -77,7 +77,7 @@ const Footer = () => {
                   <i className="fab fa-firefox-browser fa-2x text-primary"></i>
                 </div>
                 <div>
-                  <h4 className="text-white">Yoursite@ex.com</h4>
+                  <h4 className="text-white">brightbuy.lk</h4>
                   <p className="mb-2">(+012) 3456 7890</p>
                 </div>
               </div>
