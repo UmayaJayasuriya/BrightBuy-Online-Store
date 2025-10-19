@@ -1,8 +1,5 @@
 fastapi[all]
-sqlalchemy
-alembic
 python-dotenv
 passlib[bcrypt]
-pymysql
 python-jose[cryptography]
 mysql-connector-python

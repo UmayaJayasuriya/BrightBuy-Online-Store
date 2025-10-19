@@ -4,8 +4,7 @@ Apply CVV Validation Trigger
 import sys
 sys.path.insert(0, '.')
 
-from sqlalchemy import text
-from app.database import engine
+from app.database import get_connection
 
 trigger_drop = "DROP TRIGGER IF EXISTS check_cvv_length;"
 
@@ -23,21 +22,31 @@ END;
 
 
 def apply_trigger():
+    conn = None
+    cursor = None
     try:
-        conn = engine.connect()
+        conn = get_connection()
+        cursor = conn.cursor()
+        
         print("Dropping existing CVV trigger (if any)...")
-        conn.execute(text(trigger_drop))
+        cursor.execute(trigger_drop)
         conn.commit()
 
         print("Creating CVV validation trigger...")
-        conn.execute(text(trigger_create))
+        cursor.execute(trigger_create)
         conn.commit()
 
         print("✅ CVV validation trigger created successfully!")
-        conn.close()
     except Exception as e:
         print(f"❌ Error applying CVV trigger: {e}")
+        if conn:
+            conn.rollback()
         raise
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 if __name__ == '__main__':
     apply_trigger()

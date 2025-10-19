@@ -4,8 +4,7 @@ Apply GetOrderSummary Stored Procedure
 import sys
 sys.path.insert(0, '.')
 
-from sqlalchemy import text
-from app.database import engine
+from app.database import get_connection
 
 
 procedure_drop = "DROP PROCEDURE IF EXISTS GetOrderSummary;"
@@ -37,26 +36,34 @@ END;
 
 
 def apply_procedure():
+    conn = None
+    cursor = None
     try:
-        conn = engine.connect()
+        conn = get_connection()
+        cursor = conn.cursor()
         
         print("Dropping existing GetOrderSummary procedure (if any)...")
-        conn.execute(text(procedure_drop))
+        cursor.execute(procedure_drop)
         conn.commit()
 
         print("Creating GetOrderSummary stored procedure...")
-        conn.execute(text(procedure_create))
+        cursor.execute(procedure_create)
         conn.commit()
 
         print("✅ GetOrderSummary stored procedure created successfully!")
         print("   - Input: p_user_id (INT)")
         print("   - Returns: Order summary with items and delivery status")
         
-        conn.close()
-        
     except Exception as e:
         print(f"❌ Error creating procedure: {e}")
+        if conn:
+            conn.rollback()
         raise
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 
 if __name__ == '__main__':

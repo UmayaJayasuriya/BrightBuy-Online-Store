@@ -4,23 +4,25 @@ Verify GetOrderSummary Stored Procedure
 import sys
 sys.path.insert(0, '.')
 
-from sqlalchemy import text
-from app.database import engine
+from app.database import get_connection
 
 
 def verify_procedure():
+    conn = None
+    cursor = None
     try:
-        conn = engine.connect()
+        conn = get_connection()
+        cursor = conn.cursor()
         
         # Check if procedure exists
-        result = conn.execute(text("""
+        cursor.execute("""
             SELECT ROUTINE_NAME, ROUTINE_TYPE 
             FROM information_schema.ROUTINES 
             WHERE ROUTINE_SCHEMA = DATABASE() 
             AND ROUTINE_NAME = 'GetOrderSummary'
-        """))
+        """)
         
-        procedure = result.fetchone()
+        procedure = cursor.fetchone()
         
         if procedure:
             print("✅ GetOrderSummary stored procedure verified!")
@@ -36,10 +38,13 @@ def verify_procedure():
             print("❌ GetOrderSummary procedure not found")
             print("   Run: python database/apply_order_summary_procedure.py")
         
-        conn.close()
-        
     except Exception as e:
         print(f"❌ Error verifying procedure: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 
 if __name__ == '__main__':

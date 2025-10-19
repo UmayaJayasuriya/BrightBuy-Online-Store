@@ -2,31 +2,35 @@
 Show the actual stored procedure SQL
 """
 
-from sqlalchemy import create_engine, text
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL', 'mysql+pymysql://root:@localhost/brightbuy')
+import sys
+sys.path.insert(0, '.')
+from app.database import get_connection
 
 def show_procedure():
+    conn = None
+    cursor = None
     try:
-        engine = create_engine(DATABASE_URL)
+        conn = get_connection()
+        cursor = conn.cursor()
         
-        with engine.connect() as conn:
-            result = conn.execute(text("SHOW CREATE PROCEDURE GetOrderSummary"))
-            row = result.fetchone()
+        cursor.execute("SHOW CREATE PROCEDURE GetOrderSummary")
+        row = cursor.fetchone()
+        
+        if row:
+            print("Current GetOrderSummary Procedure:")
+            print("=" * 80)
+            print(row[2])  # The SQL is in the 3rd column
+            print("=" * 80)
+        else:
+            print("Procedure not found")
             
-            if row:
-                print("Current GetOrderSummary Procedure:")
-                print("=" * 80)
-                print(row[2])  # The SQL is in the 3rd column
-                print("=" * 80)
-            else:
-                print("Procedure not found")
-                
     except Exception as e:
         print(f"Error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 if __name__ == "__main__":
     show_procedure()

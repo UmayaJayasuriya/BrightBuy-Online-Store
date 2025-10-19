@@ -4,17 +4,19 @@ Verify Email Validation Trigger
 import sys
 sys.path.insert(0, '.')
 
-from sqlalchemy import text
-from app.database import engine
+from app.database import get_connection
 
 def verify_trigger():
     """Verify that the email validation trigger exists"""
+    conn = None
+    cursor = None
     try:
-        conn = engine.connect()
+        conn = get_connection()
+        cursor = conn.cursor()
         
         # Check if trigger exists
-        result = conn.execute(text("SHOW TRIGGERS WHERE `Trigger` = 'trg_check_email_before_insert'"))
-        trigger = result.fetchone()
+        cursor.execute("SHOW TRIGGERS WHERE `Trigger` = 'trg_check_email_before_insert'")
+        trigger = cursor.fetchone()
         
         if trigger:
             print("✅ Email validation trigger verified successfully!")
@@ -27,10 +29,13 @@ def verify_trigger():
             print("❌ Trigger not found in database")
             print("   Run: python database/apply_email_trigger.py")
         
-        conn.close()
-        
     except Exception as e:
         print(f"❌ Error verifying trigger: {str(e)}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 if __name__ == "__main__":
     verify_trigger()

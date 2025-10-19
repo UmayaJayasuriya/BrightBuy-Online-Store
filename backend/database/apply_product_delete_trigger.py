@@ -4,8 +4,7 @@ Apply Product Delete Protection Trigger
 import sys
 sys.path.insert(0, '.')
 
-from sqlalchemy import text
-from app.database import engine
+from app.database import get_connection
 
 TRIGGER_DROP = "DROP TRIGGER IF EXISTS prevent_product_delete_if_in_order;"
 
@@ -27,21 +26,31 @@ END;
 """
 
 def apply_trigger():
+    conn = None
+    cursor = None
     try:
-        conn = engine.connect()
+        conn = get_connection()
+        cursor = conn.cursor()
+        
         print("Dropping existing product delete trigger (if any)...")
-        conn.execute(text(TRIGGER_DROP))
+        cursor.execute(TRIGGER_DROP)
         conn.commit()
 
         print("Creating product delete protection trigger...")
-        conn.execute(text(TRIGGER_CREATE))
+        cursor.execute(TRIGGER_CREATE)
         conn.commit()
 
         print("✅ Product delete trigger created successfully!")
-        conn.close()
     except Exception as e:
         print(f"❌ Error applying product delete trigger: {e}")
+        if conn:
+            conn.rollback()
         raise
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 if __name__ == "__main__":
     apply_trigger()

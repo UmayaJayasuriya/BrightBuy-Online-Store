@@ -5,30 +5,31 @@ This script tests that variant quantities are properly reduced after order creat
 import sys
 sys.path.insert(0, '.')
 
-from sqlalchemy import text
-from app.database import engine
+from app.database import get_connection
 
 
 def test_variant_quantity_reduction():
     """
     Test that variant quantities are reduced when orders are placed
     """
+    conn = None
+    cursor = None
     try:
-        conn = engine.connect()
+        conn = get_connection()
+        cursor = conn.cursor()
         
         # Get a sample variant with its current quantity
-        result = conn.execute(text("""
+        cursor.execute("""
             SELECT variant_id, variant_name, quantity 
             FROM variant 
             WHERE quantity > 0 
             LIMIT 5
-        """))
+        """)
         
-        variants = result.fetchall()
+        variants = cursor.fetchall()
         
         if not variants:
             print("❌ No variants with stock found")
-            conn.close()
             return
         
         print("📦 Sample Variants with Stock:")
@@ -50,10 +51,13 @@ def test_variant_quantity_reduction():
         print("      • Prevents: quantity < 0")
         print("      • Action: BEFORE UPDATE on variant table")
         
-        conn.close()
-        
     except Exception as e:
         print(f"❌ Error: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 
 if __name__ == '__main__':
