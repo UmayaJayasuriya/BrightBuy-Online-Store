@@ -36,7 +36,16 @@ const Admin = () => {
   const [newProduct, setNewProduct] = useState({
     product_name: '',
     category_id: '',
-    description: ''
+    description: '',
+    variants: []
+  });
+
+  // For new variant input
+  const [newVariant, setNewVariant] = useState({
+    variant_name: '',
+    price: '',
+    quantity: '',
+    SKU: ''
   });
 
   // Variant quantity update (Quantities tab only)
@@ -140,16 +149,31 @@ const Admin = () => {
     try {
       const config = axiosConfig();
       if (!config.headers.Authorization) { setError('Not authenticated. Please log in as admin.'); return; }
-      const params = new URLSearchParams();
-      params.append('product_name', newProduct.product_name);
-      params.append('category_id', newProduct.category_id);
-      if (newProduct.description) params.append('description', newProduct.description);
-      const res = await axios.post(`http://127.0.0.1:8020/admin/products?${params.toString()}`, {}, config);
+      // Send product and variants as JSON
+      const payload = {
+        product_name: newProduct.product_name,
+        category_id: parseInt(newProduct.category_id),
+        description: newProduct.description || null,
+        variants: newProduct.variants.length > 0 ? newProduct.variants : null
+      };
+      const res = await axios.post(`http://127.0.0.1:8020/admin/products`, payload, config);
       setSuccessMessage(`Product "${res.data.product_name}" added successfully!`);
-      setNewProduct({ product_name: '', category_id: '', description: '' });
+      setNewProduct({ product_name: '', category_id: '', description: '', variants: [] });
+      setNewVariant({ variant_name: '', price: '', quantity: '', SKU: '' });
       fetchProducts();
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to add product');
+      // Handle FastAPI validation errors
+      if (err.response?.data?.detail) {
+        if (Array.isArray(err.response.data.detail)) {
+          // Format validation errors
+          const errorMessages = err.response.data.detail.map(e => `${e.loc.join('.')}: ${e.msg}`).join(', ');
+          setError(errorMessages);
+        } else {
+          setError(err.response.data.detail);
+        }
+      } else {
+        setError('Failed to add product');
+      }
     } finally { setLoading(false); }
   };
 
@@ -345,6 +369,85 @@ const Admin = () => {
               <div className="col-md-2">
                 <button type="submit" className="btn btn-primary w-100" disabled={loading}>Add Product</button>
               </div>
+            </div>
+            {/* Add Variant Section */}
+            <div className="mt-3">
+              <h6>Add Variants (optional)</h6>
+              <div className="row">
+                <div className="col-md-3">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Variant Name"
+                    value={newVariant.variant_name}
+                    onChange={(e) => setNewVariant({ ...newVariant, variant_name: e.target.value })}
+                  />
+                </div>
+                <div className="col-md-2">
+                  <input
+                    type="number"
+                    className="form-control"
+                    placeholder="Price"
+                    value={newVariant.price}
+                    onChange={(e) => setNewVariant({ ...newVariant, price: e.target.value })}
+                  />
+                </div>
+                <div className="col-md-2">
+                  <input
+                    type="number"
+                    className="form-control"
+                    placeholder="Quantity"
+                    value={newVariant.quantity}
+                    onChange={(e) => setNewVariant({ ...newVariant, quantity: e.target.value })}
+                  />
+                </div>
+                <div className="col-md-3">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="SKU (optional)"
+                    value={newVariant.SKU}
+                    onChange={(e) => setNewVariant({ ...newVariant, SKU: e.target.value })}
+                  />
+                </div>
+                <div className="col-md-2">
+                  <button
+                    type="button"
+                    className="btn btn-secondary w-100"
+                    onClick={() => {
+                      if (!newVariant.variant_name || !newVariant.price || !newVariant.quantity) return;
+                      setNewProduct({
+                        ...newProduct,
+                        variants: [...newProduct.variants, {
+                          variant_name: newVariant.variant_name,
+                          price: parseFloat(newVariant.price),
+                          quantity: parseInt(newVariant.quantity),
+                          SKU: newVariant.SKU || null
+                        }]
+                      });
+                      setNewVariant({ variant_name: '', price: '', quantity: '', SKU: '' });
+                    }}
+                  >Add Variant</button>
+                </div>
+              </div>
+              {/* List added variants */}
+              {newProduct.variants.length > 0 && (
+                <div className="mt-2">
+                  <ul className="list-group">
+                    {newProduct.variants.map((v, idx) => (
+                      <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
+                        {v.variant_name} | Price: {v.price} | Qty: {v.quantity} | SKU: {v.SKU}
+                        <button type="button" className="btn btn-sm btn-danger" onClick={() => {
+                          setNewProduct({
+                            ...newProduct,
+                            variants: newProduct.variants.filter((_, i) => i !== idx)
+                          });
+                        }}>Remove</button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </form>
         </div>

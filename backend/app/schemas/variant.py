@@ -11,6 +11,14 @@ class VariantAttributeOut(BaseModel):
         from_attributes = True
 
 
+# Variant creation schema
+class VariantCreate(BaseModel):
+    variant_name: str
+    price: float
+    quantity: int
+    SKU: Optional[str] = None
+
+
 # Variant schema
 class VariantOut(BaseModel):
     variant_id: int

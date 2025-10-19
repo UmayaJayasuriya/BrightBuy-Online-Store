@@ -1,15 +1,14 @@
 DELIMITER $$
 
 CREATE TRIGGER prevent_product_delete_if_in_order
-BEFORE DELETE ON Product
+BEFORE DELETE ON product
 FOR EACH ROW
 BEGIN
+    /* Prevent deleting a product if any order_item references one of its variants */
     IF EXISTS (
         SELECT 1
-        FROM Variant v
-        JOIN Cart_Item ci ON v.variant_id = ci.variant_id
-        JOIN Cart c ON ci.cart_id = c.cart_id
-        JOIN Orders o ON c.cart_id = o.cart_id
+        FROM variant v
+        JOIN order_item oi ON oi.variant_id = v.variant_id
         WHERE v.product_id = OLD.product_id
     ) THEN
         SIGNAL SQLSTATE '45000'

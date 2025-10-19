@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from typing import List, Optional
 import mysql.connector
 from app.database import get_db
 from app.security import get_admin_user
+from app.schemas.product import ProductCreate
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -65,9 +66,7 @@ def get_order_items(order_id: int, db: mysql.connector.MySQLConnection = Depends
 
 @router.post("/products", response_model=dict, status_code=201)
 def create_product(
-    product_name: str,
-    category_id: int,
-    description: Optional[str] = None,
+    product: ProductCreate = Body(...),
     db: mysql.connector.MySQLConnection = Depends(get_db),
     admin=Depends(get_admin_user)
 ):
@@ -75,11 +74,19 @@ def create_product(
     try:
         cursor.execute(
             "INSERT INTO product (product_name, category_id, description) VALUES (%s, %s, %s)",
-            (product_name, category_id, description)
+            (product.product_name, product.category_id, product.description)
         )
         db.commit()
         product_id = cursor.lastrowid
-        return {"product_id": product_id, "product_name": product_name, "category_id": category_id, "description": description}
+        # If variants provided, insert them
+        if product.variants:
+            for v in product.variants:
+                cursor.execute(
+                    "INSERT INTO variant (variant_name, product_id, price, quantity, SKU) VALUES (%s, %s, %s, %s, %s)",
+                    (v.variant_name, product_id, v.price, v.quantity, v.SKU)
+                )
+            db.commit()
+        return {"product_id": product_id, "product_name": product.product_name, "category_id": product.category_id, "description": product.description}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
+from app.schemas.variant import VariantCreate
 
 # Category info for product response
 class CategoryInfo(BaseModel):
@@ -25,3 +26,4 @@ class ProductCreate(BaseModel):
     product_name: str
     category_id: int
     description: Optional[str] = None
+    variants: Optional[List[VariantCreate]] = None
