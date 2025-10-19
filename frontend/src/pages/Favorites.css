@@ -1,0 +1,27 @@
+/* Favorites Page Styles */
+
+.favorite-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.favorite-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.favorite-card .card-img-top {
+  transition: opacity 0.3s ease;
+}
+
+.favorite-card:hover .card-img-top {
+  opacity: 0.9;
+}
+
+.favorite-card .btn-danger {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.favorite-card:hover .btn-danger {
+  opacity: 1;
+}

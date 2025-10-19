@@ -2,25 +2,73 @@
  * ProductCard Component
  * Reusable product card for displaying product information
  */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
 import './ProductCard.css';
 
 const ProductCard = ({ product }) => {
   const { addToWishlist } = useCart();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isAuthenticated, user, openLoginModal } = useAuth();
   const navigate = useNavigate();
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  // Check if product is in favorites on mount
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (isAuthenticated && user) {
+        try {
+          const response = await axios.get(
+            `http://127.0.0.1:8020/favorites/check/${user.user_id}/${product.product_id}`
+          );
+          setIsFavorite(response.data.is_favorite);
+        } catch (error) {
+          console.error('Error checking favorite status:', error);
+        }
+      }
+    };
+
+    checkFavoriteStatus();
+  }, [isAuthenticated, user, product.product_id]);
 
   const handleViewProduct = (e) => {
     e.preventDefault();
     navigate(`/single/${product.product_id}`);
   };
 
-  const handleAddToWishlist = (e) => {
+  const handleAddToFavorite = async (e) => {
     e.preventDefault();
-    addToWishlist(product);
+    
+    // Check if user is logged in
+    if (!isAuthenticated) {
+      // Directly open login modal
+      openLoginModal();
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        // Remove from favorites
+        await axios.delete(`http://127.0.0.1:8020/favorites/${user.user_id}/${product.product_id}`);
+        setIsFavorite(false);
+        alert('Removed from favorites!');
+      } else {
+        // Add to favorites
+        await axios.post(`http://127.0.0.1:8020/favorites/${user.user_id}`, {
+          product_id: product.product_id
+        });
+        setIsFavorite(true);
+        alert('Added to favorites!');
+      }
+      
+      // Also update local wishlist for backward compatibility
+      addToWishlist(product);
+    } catch (error) {
+      console.error('Error updating favorites:', error);
+      alert('Failed to update favorites. Please try again.');
+    }
   };
 
   return (
@@ -84,11 +132,11 @@ const ProductCard = ({ product }) => {
               {isAdmin ? 'Edit Product' : 'View Product'}
             </button>
             <button
-              onClick={handleAddToWishlist}
-              className="btn btn-outline-primary rounded-circle"
-              title="Add to Wishlist"
+              onClick={handleAddToFavorite}
+              className={`btn ${isFavorite ? 'btn-danger' : 'btn-outline-primary'} rounded-circle`}
+              title={isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
             >
-              <i className="fas fa-heart"></i>
+              <i className={`fa${isFavorite ? 's' : 'r'} fa-heart`}></i>
             </button>
           </div>
         </div>

@@ -29,6 +29,7 @@ import Payment from './pages/Payment';
 import Profile from './pages/Profile';
 import Contact from './pages/Contact';
 import Admin from './pages/Admin';
+import Favorites from './pages/Favorites';
 
 // Common Components
 import Spinner from './components/common/Spinner';
@@ -54,6 +55,7 @@ function App() {
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/payment" element={<Payment />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/favorites" element={<Favorites />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin" element={<Admin />} />
             </Routes>

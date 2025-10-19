@@ -101,6 +101,10 @@ const Navbar = () => {
                   Shop
                 </NavLink>
 
+                <NavLink to="/favorites" className="nav-item nav-link">
+                  Favorites
+                </NavLink>
+
                 {/* Pages Dropdown */}
                 <div className="nav-item dropdown">
                   <a
@@ -119,6 +123,9 @@ const Navbar = () => {
                     </Link>
                     <Link to="/checkout" className="dropdown-item">
                       Checkout
+                    </Link>
+                    <Link to="/favorites" className="dropdown-item">
+                      My Favorites
                     </Link>
                   </div>
                 </div>
