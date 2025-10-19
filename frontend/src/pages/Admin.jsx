@@ -209,6 +209,22 @@ const Admin = () => {
     } finally { setLoading(false); }
   };
 
+  // Mark order as delivered (done)
+  const markOrderDelivered = (orderId) => {
+    setLoading(true); setError(''); setSuccessMessage('');
+    const config = axiosConfig();
+    if (!config.headers.Authorization) { setError('Not authenticated. Please log in as admin.'); setLoading(false); return; }
+    axios.put(`http://127.0.0.1:8020/analytics/orders/${orderId}/status`, { status: 'Delivered' }, config)
+      .then(() => {
+        setSuccessMessage(`Order ${orderId} marked as Delivered`);
+        fetchOrders();
+      })
+      .catch(err => {
+        setError(err.response?.data?.detail || 'Failed to update order status');
+      })
+      .finally(() => setLoading(false));
+  };
+
   const toggleOrderItems = async (orderId) => {
     setExpandedOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }));
     if (!expandedOrders[orderId] && !orderItems[orderId]) {
@@ -277,7 +293,20 @@ const Admin = () => {
                 <td>{o.user_id}</td>
                 <td>{new Date(o.order_date).toLocaleDateString()}</td>
                 <td>${parseFloat(o.total_amount).toFixed(2)}</td>
-                <td>{o.delivery_status || 'N/A'}</td>
+                <td>
+                  <div className="d-flex align-items-center gap-2">
+                    <span>{o.delivery_status ? (o.delivery_status.charAt(0).toUpperCase() + o.delivery_status.slice(1)) : 'N/A'}</span>
+                    {(o.delivery_status || '').toLowerCase() !== 'delivered' && (
+                      <button
+                        className="btn btn-sm btn-success"
+                        onClick={() => markOrderDelivered(o.order_id)}
+                        disabled={loading}
+                      >
+                        Mark Done
+                      </button>
+                    )}
+                  </div>
+                </td>
                 <td>{o.payment_method || 'N/A'}</td>
                 <td>{o.payment_status || 'N/A'}</td>
                 <td>

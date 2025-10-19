@@ -409,9 +409,27 @@ def update_order_status(
                 detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
             )
         
-        # Call stored procedure
-        cursor.execute("CALL UpdateOrderStatus(%s, %s)", (order_id, status_update.status))
-        result = cursor.fetchone()
+        # Try stored procedure first; if missing, fallback to direct UPDATE
+        result = None
+        try:
+            cursor.execute("CALL UpdateOrderStatus(%s, %s)", (order_id, status_update.status))
+            result = cursor.fetchone()
+        except mysql.connector.Error as proc_err:
+            # ER_SP_DOES_NOT_EXIST: 1305 - procedure does not exist
+            if proc_err.errno == 1305 or "does not exist" in str(proc_err):
+                # Perform direct update on delivery table
+                # Ensure delivery row exists for order
+                cursor.execute("SELECT delivery_id FROM delivery WHERE order_id = %s", (order_id,))
+                row = cursor.fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
+                # Update delivery status directly
+                cursor.execute(
+                    "UPDATE delivery SET delivery_status = %s WHERE order_id = %s",
+                    (status_update.status, order_id)
+                )
+            else:
+                raise
         
         db.commit()
         cursor.close()
