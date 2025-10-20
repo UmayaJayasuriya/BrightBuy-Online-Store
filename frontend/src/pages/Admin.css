@@ -111,3 +111,25 @@
   border-width: 0.3rem;
   color: #3498db;
 }
+
+/* Category button styling - override Bootstrap blue with custom purple */
+.products-section .btn-outline-primary,
+.quantities-section .btn-outline-primary {
+  color: #341539 !important;
+  border-color: #341539 !important;
+  background-color: transparent;
+}
+
+.products-section .btn-outline-primary:hover,
+.quantities-section .btn-outline-primary:hover {
+  color: #ffffff !important;
+  background-color: #341539 !important;
+  border-color: #341539 !important;
+}
+
+.products-section .btn-outline-primary.active,
+.quantities-section .btn-outline-primary.active {
+  color: #ffffff !important;
+  background-color: #341539 !important;
+  border-color: #341539 !important;
+}
