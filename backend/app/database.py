@@ -1,7 +1,4 @@
-﻿"""
-Database connection using official MySQL Connector/Python
-No SQLAlchemy - Pure MySQL connector
-"""
+﻿
 import mysql.connector
 from mysql.connector import pooling
 import os
