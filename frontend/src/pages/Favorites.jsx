@@ -10,7 +10,7 @@ import Spinner from '../components/common/Spinner';
 import './Favorites.css';
 
 const Favorites = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, openLoginModal } = useAuth();
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,12 +18,14 @@ const Favorites = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/shop');
+      // Open login modal and redirect to home page
+      openLoginModal();
+      navigate('/');
       return;
     }
 
     fetchFavorites();
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, openLoginModal, navigate]);
 
   const fetchFavorites = async () => {
     try {
