@@ -15,6 +15,7 @@ from app.routes import location
 from app.routes import analytics
 from app.routes import admin
 from app.routes import favorite
+from app.routes import reports
 
 app = FastAPI()
 
@@ -53,6 +54,7 @@ app.include_router(location.router)
 app.include_router(analytics.router)
 app.include_router(admin.router)
 app.include_router(favorite.router)
+app.include_router(reports.router)
 
 
 

@@ -54,6 +54,15 @@ const Admin = () => {
     quantity: ''
   });
 
+  // Reports parameters
+  const [reportParams, setReportParams] = useState({
+    year: new Date().getFullYear(),
+    startDate: '',
+    endDate: '',
+    limit: 50,
+    userId: ''
+  });
+
   useEffect(() => {
     if (!isAdmin) navigate('/');
   }, [isAdmin, navigate]);
@@ -70,6 +79,10 @@ const Admin = () => {
       fetchCategories();
       fetchProducts();
       fetchVariants();
+    }
+    if (activeTab === 'reports') {
+      // Set default year to current year
+      setReportParams(prev => ({ ...prev, year: new Date().getFullYear() }));
     }
   }, [activeTab, isAdmin]);
 
@@ -627,6 +640,209 @@ const Admin = () => {
     </div>
   );
 
+  const downloadReport = async (endpoint, filename) => {
+    setLoading(true); setError(''); setSuccessMessage('');
+    try {
+      const config = axiosConfig();
+      if (!config.headers.Authorization) {
+        setError('Not authenticated. Please log in as admin.');
+        return;
+      }
+
+      const response = await axios.get(`http://127.0.0.1:8020${endpoint}`, {
+        ...config,
+        responseType: 'blob'
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      setSuccessMessage(`${filename} downloaded successfully!`);
+    } catch (err) {
+      setError(err.response?.data?.detail || `Failed to download ${filename}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderReports = () => (
+    <div className="reports-section">
+      <h2>Download Reports</h2>
+      <p className="text-muted">Generate and download PDF reports for sales analysis and business insights.</p>
+
+      <div className="row g-4">
+        {/* Quarterly Sales Report */}
+        <div className="col-md-12">
+          <div className="card h-100">
+            <div className="card-body">
+              <h5 className="card-title">
+                <i className="bi bi-calendar-range"></i> Quarterly Sales Report
+              </h5>
+              <p className="card-text">Get sales breakdown by quarter for a specific year.</p>
+              <div className="mb-3">
+                <label className="form-label">Year</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={reportParams.year}
+                  onChange={(e) => setReportParams({ ...reportParams, year: e.target.value })}
+                  min="2020"
+                  max="2030"
+                />
+              </div>
+              <button
+                className="btn btn-primary w-100"
+                onClick={() => downloadReport(
+                  `/reports/quarterly-sales/${reportParams.year}`,
+                  `quarterly_sales_${reportParams.year}.pdf`
+                )}
+                disabled={loading || !reportParams.year}
+              >
+                <i className="bi bi-download"></i> Download Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Top Selling Products */}
+        <div className="col-md-12">
+          <div className="card h-100">
+            <div className="card-body">
+              <h5 className="card-title">
+                <i className="bi bi-trophy"></i> Top Selling Products
+              </h5>
+              <p className="card-text">View best-selling products with optional date filters.</p>
+              <div className="mb-2">
+                <label className="form-label">Start Date (Optional)</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={reportParams.startDate}
+                  onChange={(e) => setReportParams({ ...reportParams, startDate: e.target.value })}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">End Date (Optional)</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={reportParams.endDate}
+                  onChange={(e) => setReportParams({ ...reportParams, endDate: e.target.value })}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Limit</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={reportParams.limit}
+                  onChange={(e) => setReportParams({ ...reportParams, limit: e.target.value })}
+                  min="1"
+                  max="100"
+                />
+              </div>
+              <button
+                className="btn btn-primary w-100"
+                onClick={() => {
+                  let endpoint = `/reports/top-selling-products?limit=${reportParams.limit}`;
+                  if (reportParams.startDate) endpoint += `&start_date=${reportParams.startDate}`;
+                  if (reportParams.endDate) endpoint += `&end_date=${reportParams.endDate}`;
+                  downloadReport(endpoint, `top_selling_products.pdf`);
+                }}
+                disabled={loading}
+              >
+                <i className="bi bi-download"></i> Download Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Category Orders Report */}
+        <div className="col-md-12">
+          <div className="card h-100">
+            <div className="card-body">
+              <h5 className="card-title">
+                <i className="bi bi-tags"></i> Category-wise Orders
+              </h5>
+              <p className="card-text">Analyze total orders and revenue by product category.</p>
+              <button
+                className="btn btn-primary w-100"
+                onClick={() => downloadReport(
+                  `/reports/category-orders`,
+                  `category_orders_report.pdf`
+                )}
+                disabled={loading}
+              >
+                <i className="bi bi-download"></i> Download Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Customer Order Summary */}
+        <div className="col-md-12">
+          <div className="card h-100">
+            <div className="card-body">
+              <h5 className="card-title">
+                <i className="bi bi-person-badge"></i> Customer Order Summary
+              </h5>
+              <p className="card-text">Get detailed order history and payment status for a specific customer.</p>
+              <div className="mb-3">
+                <label className="form-label">User ID</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={reportParams.userId}
+                  onChange={(e) => setReportParams({ ...reportParams, userId: e.target.value })}
+                  placeholder="Enter customer user ID"
+                />
+              </div>
+              <button
+                className="btn btn-primary w-100"
+                onClick={() => downloadReport(
+                  `/reports/customer-orders/${reportParams.userId}`,
+                  `customer_${reportParams.userId}_orders.pdf`
+                )}
+                disabled={loading || !reportParams.userId}
+              >
+                <i className="bi bi-download"></i> Download Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* All Customers Summary */}
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <h5 className="card-title">
+                <i className="bi bi-people"></i> All Customers Summary
+              </h5>
+              <p className="card-text">Comprehensive report of top customers with order statistics and spending analysis.</p>
+              <button
+                className="btn btn-primary w-100"
+                onClick={() => downloadReport(
+                  `/reports/all-customers-summary`,
+                  `all_customers_summary.pdf`
+                )}
+                disabled={loading}
+              >
+                <i className="bi bi-download"></i> Download Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="admin-dashboard container my-5">
       <h1 className="text-center mb-4">Admin Dashboard</h1>
@@ -658,6 +874,9 @@ const Admin = () => {
         <li className="nav-item">
           <button className={`nav-link ${activeTab === 'quantities' ? 'active' : ''}`} onClick={() => setActiveTab('quantities')}>Quantities</button>
         </li>
+        <li className="nav-item">
+          <button className={`nav-link ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>Reports</button>
+        </li>
       </ul>
 
       {loading && <div className="text-center"><div className="spinner-border" role="status"></div></div>}
@@ -666,6 +885,7 @@ const Admin = () => {
       {activeTab === 'orders' && renderOrders()}
       {activeTab === 'products' && renderProducts()}
       {activeTab === 'quantities' && renderQuantities()}
+      {activeTab === 'reports' && renderReports()}
     </div>
   );
 };
