@@ -34,6 +34,7 @@ import Favorites from './pages/Favorites';
 // Common Components
 import Spinner from './components/common/Spinner';
 import BackToTop from './components/common/BackToTop';
+import ScrollToTop from './components/common/ScrollToTop';
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
       <CartProvider>
         <Router>
           <div className="App">
+            <ScrollToTop />
             <Spinner />
             <Header />
             <Navbar />
