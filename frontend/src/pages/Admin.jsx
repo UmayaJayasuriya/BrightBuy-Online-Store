@@ -358,6 +358,8 @@ const Admin = () => {
   const renderProducts = () => (
     <div className="products-section">
       <h2>Products</h2>
+      {/* Add Variant to Existing Product (by Product ID) */}
+      <GlobalAddVariantForm onSuccess={() => { fetchProducts(); }} />
       <div className="card mb-4">
         <div className="card-body">
           <h5 className="card-title">Add New Product</h5>
@@ -638,6 +640,74 @@ const Admin = () => {
       {activeTab === 'products' && renderProducts()}
       {activeTab === 'quantities' && renderQuantities()}
     </div>
+  );
+};
+
+// Global form to add a variant by Product ID
+const GlobalAddVariantForm = ({ onSuccess }) => {
+  const { user } = useAuth();
+  const [productId, setProductId] = React.useState('');
+  const [variant, setVariant] = React.useState({ variant_name: '', price: '', quantity: '', SKU: '' });
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [success, setSuccess] = React.useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true); setError(''); setSuccess('');
+    if (!productId || !variant.variant_name || !variant.price || !variant.quantity) {
+      setError('All fields except SKU are required.');
+      setLoading(false);
+      return;
+    }
+    try {
+      const token = user?.access_token;
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : { headers: {} };
+      const payload = {
+        variant_name: variant.variant_name,
+        price: parseFloat(variant.price),
+        quantity: parseInt(variant.quantity),
+        SKU: variant.SKU || null
+      };
+      const res = await axios.post(`http://127.0.0.1:8020/admin/products/${productId}/variants`, payload, config);
+      setSuccess(`Variant "${res.data.variant_name}" added to product ${productId}!`);
+      setVariant({ variant_name: '', price: '', quantity: '', SKU: '' });
+      setProductId('');
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      if (err.response?.data?.detail) {
+        setError(typeof err.response.data.detail === 'string' ? err.response.data.detail : JSON.stringify(err.response.data.detail));
+      } else {
+        setError('Failed to add variant');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form className="row g-2 align-items-center mb-3" onSubmit={handleSubmit} style={{ background: '#eef3ff', padding: 10, borderRadius: 6 }}>
+      <div className="col-md-2">
+        <input type="number" className="form-control" placeholder="Product ID" value={productId} onChange={e => setProductId(e.target.value)} required />
+      </div>
+      <div className="col-md-3">
+        <input type="text" className="form-control" placeholder="Variant Name" value={variant.variant_name} onChange={e => setVariant({ ...variant, variant_name: e.target.value })} required />
+      </div>
+      <div className="col-md-2">
+        <input type="number" className="form-control" placeholder="Price" value={variant.price} onChange={e => setVariant({ ...variant, price: e.target.value })} required />
+      </div>
+      <div className="col-md-2">
+        <input type="number" className="form-control" placeholder="Quantity" value={variant.quantity} onChange={e => setVariant({ ...variant, quantity: e.target.value })} required />
+      </div>
+      <div className="col-md-2">
+        <input type="text" className="form-control" placeholder="SKU (optional)" value={variant.SKU} onChange={e => setVariant({ ...variant, SKU: e.target.value })} />
+      </div>
+      <div className="col-md-1">
+        <button type="submit" className="btn btn-primary w-100" disabled={loading}>Add</button>
+      </div>
+      {error && <div className="col-12"><span className="text-danger">{error}</span></div>}
+      {success && <div className="col-12"><span className="text-success">{success}</span></div>}
+    </form>
   );
 };
 
