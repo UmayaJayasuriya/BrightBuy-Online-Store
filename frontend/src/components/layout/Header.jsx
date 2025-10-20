@@ -221,13 +221,13 @@ const Header = () => {
 
       {/* User Greeting */}
       {isAuthenticated && (
-        <div className="container-fluid px-5 py-2 bg-light">
+        <div className="container-fluid px-5 py-2 header-greeting">
           <div className="row">
             <div className="col-12 text-end">
               <small className="text-muted">
                 <span className="user-greeting">
                   <span>
-                    Welcome back, <Link to="/profile" className="text-decoration-none"><strong className="text-primary">{user.user_name}</strong></Link>!
+                    Welcome back, <Link to="/profile" className="text-decoration-none fw-bolder text-primary">{user.user_name}</Link>!
                     {isAdmin && (
                       <> | <Link to="/admin" className="text-decoration-none text-danger fw-bold">Admin Dashboard</Link></>
                     )}

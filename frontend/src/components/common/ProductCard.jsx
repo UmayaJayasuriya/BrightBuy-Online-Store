@@ -14,6 +14,7 @@ const ProductCard = ({ product }) => {
   const { isAdmin, isAuthenticated, user, openLoginModal } = useAuth();
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
 
   // Check if product is in favorites on mount
   useEffect(() => {
@@ -48,26 +49,33 @@ const ProductCard = ({ product }) => {
       return;
     }
 
+    setFavLoading(true);
     try {
       if (isFavorite) {
         // Remove from favorites
         await axios.delete(`http://127.0.0.1:8020/favorites/${user.user_id}/${product.product_id}`);
         setIsFavorite(false);
-        alert('Removed from favorites!');
+        // small inline feedback instead of blocking alert
+        console.info('Removed from favorites');
       } else {
         // Add to favorites
         await axios.post(`http://127.0.0.1:8020/favorites/${user.user_id}`, {
           product_id: product.product_id
         });
         setIsFavorite(true);
-        alert('Added to favorites!');
+        console.info('Added to favorites');
       }
-      
+
       // Also update local wishlist for backward compatibility
       addToWishlist(product);
     } catch (error) {
-      console.error('Error updating favorites:', error);
-      alert('Failed to update favorites. Please try again.');
+      // Prefer server-provided error message when available
+      const serverMessage = error?.response?.data?.detail || error?.response?.data?.message;
+      console.error('Error updating favorites:', error, serverMessage || 'no server message');
+      // show short alert to user
+      alert(serverMessage ? `Failed to update favorites: ${serverMessage}` : 'Failed to update favorites. Please try again.');
+    } finally {
+      setFavLoading(false);
     }
   };
 
@@ -135,6 +143,7 @@ const ProductCard = ({ product }) => {
               onClick={handleAddToFavorite}
               className={`btn ${isFavorite ? 'btn-danger' : 'btn-outline-primary'} rounded-circle`}
               title={isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+              disabled={favLoading}
             >
               <i className={`fa${isFavorite ? 's' : 'r'} fa-heart`}></i>
             </button>

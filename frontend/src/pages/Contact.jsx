@@ -79,9 +79,9 @@ const Contact = () => {
     <div className="contact-page">
       {/* Page Header */}
       <div className="container-fluid page-header py-5" style={{
-        backgroundImage: 'url(/img/carousel-1.jpg)',
-        backgroundSize: '200%',
-        backgroundPosition: 'center 15%',
+        backgroundImage: 'url(/img/topbar.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         position: 'relative'
       }}>

@@ -96,13 +96,15 @@
 
 /* Button Enhancements in Product Cards */
 .product-content .btn-primary {
-  background: var(--gradient-primary) !important;
+  /* Use semantic primary color for the View Product button so theme swaps apply */
+  background: var(--color-primary) !important;
   border: none !important;
   color: var(--papaya-whip) !important;
 }
 
 .product-content .btn-primary:hover {
-  background: var(--barn-red) !important;
+  /* Hover uses accent color for a noticeable but harmonious effect */
+  background: var(--color-accent) !important;
   transform: translateY(-2px);
 }
 

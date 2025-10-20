@@ -58,11 +58,12 @@ const Bestseller = () => {
     <div className="bestseller-page">
       {/* Page Header */}
       <div className="container-fluid page-header py-5" style={{
-        backgroundImage: 'url(/img/carousel-1.jpg)',
-        backgroundSize: '200%',
-        backgroundPosition: 'center 15%',
+        backgroundImage: 'url(/img/topbar.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        position: 'relative'
+        position: 'relative',
+        minHeight: '260px'
       }}>
         <div style={{
           position: 'absolute',
@@ -88,8 +89,8 @@ const Bestseller = () => {
       <div className="container-fluid py-5">
         <div className="container py-5">
           <div className="section-title text-center mb-5">
-            <h2 className="display-6 mb-3">Our Top Selling Products</h2>
-            <p className="text-muted">
+            <h2 className="display-6 mb-3 fw-bolder">Our Top Selling Products</h2>
+            <p className="text-muted fw-semibold">
               Discover our most popular electronics chosen by thousands of satisfied customers
             </p>
           </div>

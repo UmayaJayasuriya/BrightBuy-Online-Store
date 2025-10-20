@@ -9,6 +9,18 @@
   color: var(--papaya-whip) !important;
 }
 
+/* Ensure breadcrumb links (Home / Shop) in the header are white and stay white on hover/focus */
+.single-page .page-header .breadcrumb-item a {
+  color: #ffffff !important;
+}
+
+.single-page .page-header .breadcrumb-item a:hover,
+.single-page .page-header .breadcrumb-item a:focus,
+.single-page .page-header .breadcrumb-item a:visited {
+  color: #ffffff !important;
+  text-decoration: underline;
+}
+
 .product-images .main-image {
   overflow: hidden;
   border-radius: 0.5rem;

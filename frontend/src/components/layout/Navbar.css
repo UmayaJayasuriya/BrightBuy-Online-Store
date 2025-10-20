@@ -3,7 +3,7 @@
   position: sticky;
   top: 0;
   z-index: 999;
-  background: var(--prussian-blue) !important;
+  background: var(--navbar-bg) !important;
 }
 
 .nav-bar.sticky-top {
@@ -13,7 +13,7 @@
 .categories-bars {
   margin: 0;
   padding: 0;
-  background: var(--prussian-blue);
+  background: var(--navbar-bg);
 }
 
 .categories-bars li {
@@ -29,16 +29,17 @@
 }
 
 .categories-bars-item a {
-  color: var(--papaya-whip) !important;
+  color: var(--navbar-text) !important;
   text-decoration: none;
   transition: 0.3s;
+  font-weight: 700;
 }
 
 .categories-bars-item a:hover {
   /* Keep the hovered link readable against the sidebar background.
      Use a light color (papaya-whip) instead of the red accent which
      clashes with the red dropdown background. */
-  color: var(--papaya-whip) !important;
+  color: var(--navbar-text) !important;
   text-shadow: none;
 }
 
@@ -53,8 +54,9 @@
 }
 
 .nav-link {
-  color: var(--papaya-whip) !important;
+  color: var(--navbar-text) !important;
   transition: all 0.3s ease;
+  font-weight: 700;
 }
 
 .nav-link:hover,
@@ -64,21 +66,21 @@
 }
 
 .navbar-toggler {
-  border-color: var(--papaya-whip);
+  border-color: rgba(255,255,255,0.22);
 }
 
 .navbar-toggler .fa-bars {
-  color: var(--papaya-whip);
+  color: var(--navbar-text);
 }
 
 .dropdown-menu {
-  background: var(--papaya-whip) !important;
+  background: var(--color-surface) !important;
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 .dropdown-item {
-  color: var(--prussian-blue) !important;
+  color: var(--color-text) !important;
   transition: all 0.3s ease;
 }
 
@@ -108,6 +110,7 @@
 
 .navbar h4 {
   color: var(--papaya-whip) !important;
+  font-weight: 700;
 }
 
 /* Remove the blue background behind the "All Categories" label in the left sidebar */
@@ -130,7 +133,7 @@
   left: 0;
   width: 250px; /* match the sidebar width */
   z-index: 1100; /* above main content */
-  background: var(--prussian-blue); /* match sidebar */
+  background: var(--navbar-bg); /* match sidebar */
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.2);

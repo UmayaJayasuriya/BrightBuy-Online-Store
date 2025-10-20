@@ -21,7 +21,10 @@
 
 .nav-tabs .nav-link {
   cursor: pointer;
-  color: #555;
+  /* ensure visible by default */
+  color: #2c3e50 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
   border: none;
   border-bottom: 3px solid transparent;
   font-weight: 500;
@@ -34,9 +37,11 @@
 }
 
 .nav-tabs .nav-link.active {
-  color: #3498db;
-  border-bottom-color: #3498db;
+  /* keep active tab dark and more prominent */
+  color: #2c3e50 !important;
+  border-bottom-color: #2c3e50 !important;
   background-color: transparent;
+  font-weight: 700;
 }
 
 .table {
@@ -68,6 +73,26 @@
 .badge {
   padding: 0.4em 0.8em;
   font-size: 0.85rem;
+}
+
+/* Ensure role badges inside the admin users table are always visible and have good contrast */
+.users-section .badge,
+.users-section td .badge {
+  display: inline-block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.users-section .badge.bg-primary,
+.users-section td .badge.bg-primary {
+  background-color: #2D6AAB !important; /* strong blue */
+  color: #ffffff !important;
+}
+
+.users-section .badge.bg-danger,
+.users-section td .badge.bg-danger {
+  background-color: #C0392B !important; /* strong red for admin */
+  color: #ffffff !important;
 }
 
 .btn-sm {

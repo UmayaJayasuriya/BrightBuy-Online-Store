@@ -57,7 +57,7 @@ const Favorites = () => {
         {/* Page Header */}
         <div className="row mb-4">
           <div className="col-12">
-            <h1 className="display-5 mb-0">My Favorite Products</h1>
+            <h1 className="display-5 mb-0 fw-bolder">My Favorite Products</h1>
             <nav aria-label="breadcrumb">
               <ol className="breadcrumb">
                 <li className="breadcrumb-item"><Link to="/">Home</Link></li>

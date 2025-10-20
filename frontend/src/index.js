@@ -4,6 +4,7 @@
  */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './styles/mermaid-garnet-symphony.css';
 import './index.css';
 import App from './App';
 

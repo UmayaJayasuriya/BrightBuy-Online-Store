@@ -108,10 +108,10 @@ const Home = () => {
                       className={`carousel-text-content ${index === currentSlide ? 'active' : 'd-none'}`}
                     >
                       <h4 className="text-uppercase fw-bold mb-4" style={{ letterSpacing: '3px', color: '#666' }}>
-                        {slide.title}
+                        {(index === 0 || index === 1) ? <strong>{slide.title}</strong> : slide.title}
                       </h4>
                       <h1 className="display-3 text-capitalize mb-4" style={{ color: '#333' }}>
-                        {slide.subtitle}
+                        {(index === 0 || index === 1) ? <strong>{slide.subtitle}</strong> : slide.subtitle}
                       </h1>
                       <p className="text-muted mb-4">{slide.description}</p>
                       <Link className="btn btn-primary rounded-pill py-3 px-5" to="/shop">
@@ -128,36 +128,13 @@ const Home = () => {
           <div className="col-12 col-lg-5 col-xl-3">
             <div className="carousel-header-banner h-100 position-relative" style={{ background: 'none' }}>
               <img
-                src="/img/header-img.jpg"
+                src="https://i.pinimg.com/736x/19/87/f3/1987f35dbba2d94da2e3b142fe2234b9.jpg"
+                loading="lazy"
                 className="img-fluid w-100 h-100"
                 style={{ objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }}
-                alt="Woman showing smartphone"
+                alt="Woman holding a smartphone with shopping cart on screen"
               />
-              <div className="carousel-banner-offer">
-                <span className="badge fs-6 py-2 px-3 me-2">
-                  Save $48.00
-                </span>
-                <span className="badge fs-6 py-2 px-3">
-                  Special Offer
-                </span>
-              </div>
-              <div className="carousel-banner">
-                <div className="carousel-banner-content text-center p-3">
-                  <Link to="/shop" className="d-block mb-2 text-white text-decoration-none small">
-                    SmartPhone
-                  </Link>
-                  <Link to="/single/1" className="d-block text-white text-decoration-none fs-4 fw-bold mb-3">
-                    Apple iPad Mini <br /> G2356
-                  </Link>
-                  <div className="mb-3">
-                    <del className="me-2 text-white-50 fs-6">$1,250.00</del>
-                    <span className="text-warning fs-5 fw-bold">$1,050.00</span>
-                  </div>
-                </div>
-                <Link to="/cart" className="btn btn-warning rounded-pill py-2 px-4 fw-bold">
-                  <i className="fas fa-shopping-cart me-2"></i> Add To Cart
-                </Link>
-              </div>
+              {/* Banner overlays removed - only the image will display here */}
             </div>
           </div>
         </div>
@@ -186,7 +163,7 @@ const Home = () => {
       <div className="container-fluid product py-5">
         <div className="container py-5">
           <div className="section-title text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">
-            <h1 className="display-5 mb-3">Featured Products</h1>
+            <h1 className="display-5 mb-3"><strong>Featured Products</strong></h1>
             <p className="text-muted">Check out our best-selling electronics from different categories</p>
           </div>
 

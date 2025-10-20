@@ -2,72 +2,74 @@
 /* Central color palette and styling variables */
 
 :root {
-  /* New Color Palette */
-  --barn-red: #780000;
-  --fire-brick: #c1121f;
-  --papaya-whip: #fdf0d5;
-  --prussian-blue: #003049;
-  --air-superiority-blue: #669bbc;
-  
-  /* Bootstrap Variable Overrides */
-  /* Primary colors for buttons, highlights, and call-to-action sections */
-  --bs-primary: var(--fire-brick);
-  --bs-primary-rgb: 193, 18, 31;
-  
-  /* Secondary colors for hover states, icons, and secondary elements */
-  --bs-secondary: var(--air-superiority-blue);
-  --bs-secondary-rgb: 102, 155, 188;
-  
-  /* Background and light sections */
-  --bs-light: var(--papaya-whip);
-  --bs-light-rgb: 253, 240, 213;
-  
-  /* Headers, navbars, and footers */
-  --bs-dark: var(--prussian-blue);
-  --bs-dark-rgb: 0, 48, 73;
-  
-  /* Accent color for important highlights */
-  --bs-danger: var(--barn-red);
-  --bs-danger-rgb: 120, 0, 0;
-  
-  /* Text colors */
-  --bs-body-color: var(--prussian-blue);
-  --bs-body-color-rgb: 0, 48, 73;
-  --bs-white: #ffffff;
+  /* Map existing theme variables to Mermaid Garnet Symphony palette */
+  /* This ties the theme into the centralized palette defined in mermaid-garnet-symphony.css */
+  /* Legacy token mapping -> Amethyst palette */
+  --barn-red: var(--color-primary);
+  --fire-brick: var(--color-accent);
+  --papaya-whip: var(--color-primary-contrast);
+  --prussian-blue: var(--color-text);
+  --air-superiority-blue: var(--color-accent);
+
+  /* Bootstrap Variable Overrides (mapped to palette) */
+  --bs-primary: var(--color-primary);
+  --bs-primary-rgb: var(--color-primary-rgb);
+
+  --bs-secondary: var(--color-accent);
+  --bs-secondary-rgb: var(--color-accent-rgb);
+
+  --bs-light: var(--color-background);
+  --bs-light-rgb: 247, 250, 249; /* fallback soft background rgb */
+
+  --bs-dark: var(--symphony-ink);
+  --bs-dark-rgb: var(--color-text-rgb);
+
+  --bs-danger: var(--color-danger);
+  --bs-danger-rgb: 123, 31, 46;
+
+  --bs-body-color: var(--color-text);
+  --bs-body-color-rgb: var(--color-text-rgb);
+  --bs-white: var(--symphony-surface);
   --bs-white-rgb: 255, 255, 255;
-  
-  /* Gradient Variables */
-  --gradient-primary: linear-gradient(135deg, var(--barn-red), var(--fire-brick));
-  --gradient-secondary: linear-gradient(135deg, var(--air-superiority-blue), var(--prussian-blue));
-  --gradient-hero: linear-gradient(135deg, var(--barn-red), var(--fire-brick), var(--air-superiority-blue));
-  --gradient-radial: radial-gradient(circle, var(--fire-brick), var(--air-superiority-blue));
-  --gradient-banner: linear-gradient(135deg, var(--prussian-blue) 0%, var(--air-superiority-blue) 50%, var(--fire-brick) 100%);
-  
+
+  /* Gradient Variables (use palette) */
+  --gradient-primary: var(--gradient-primary);
+  --gradient-secondary: var(--gradient-accent);
+  --gradient-hero: linear-gradient(135deg, var(--color-primary), var(--color-accent), var(--color-primary-contrast));
+  --gradient-radial: radial-gradient(circle, var(--color-primary), var(--color-accent));
+  --gradient-banner: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 50%, var(--color-primary-contrast) 100%);
+
   /* Shadow and Border Colors */
-  --shadow-color: rgba(0, 48, 73, 0.15);
-  --border-color: rgba(102, 155, 188, 0.3);
-  --border-light: rgba(253, 240, 213, 0.8);
-  
+  --shadow-color: rgba(11, 20, 25, 0.08);
+  --border-color: rgba(40, 161, 153, 0.12);
+  --border-light: rgba(243, 215, 218, 0.85);
+
   /* Additional Theme Colors */
-  --navbar-bg: var(--prussian-blue);
+  /* Brand and layout tokens */
+  /* Use the Shop Now / primary button color for navbar background */
+  --navbar-bg: var(--color-primary);
+  /* Use the contrast token for readable navbar text */
   --navbar-text: var(--papaya-whip);
-  --footer-bg: var(--prussian-blue);
-  --footer-text: var(--papaya-whip);
-  --card-bg: var(--papaya-whip);
+  /* Brand font and color (BrightBuy) */
+  --brand-font: 'Guzzy', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --brand-color: #2b0b1a; /* darker brand color for improved contrast */
+  --footer-bg: var(--mermaid-deep);
+  --footer-text: var(--garnet-light);
+  --card-bg: var(--garnet-light);
   --card-border: var(--border-color);
-  
+
   /* Interactive States */
-  --hover-primary: var(--barn-red);
-  --hover-secondary: var(--prussian-blue);
-  --active-state: var(--fire-brick);
-  
+  --hover-primary: var(--garnet-deep);
+  --hover-secondary: var(--mermaid-deep);
+  --active-state: var(--garnet-mid);
+
   /* Success, Warning, Info colors using palette */
-  --bs-success: var(--air-superiority-blue);
-  --bs-success-rgb: 102, 155, 188;
-  --bs-warning: var(--fire-brick);
-  --bs-warning-rgb: 193, 18, 31;
-  --bs-info: var(--papaya-whip);
-  --bs-info-rgb: 253, 240, 213;
+  --bs-success: var(--mermaid-mid);
+  --bs-success-rgb: var(--color-accent-rgb);
+  --bs-warning: var(--garnet-mid);
+  --bs-warning-rgb: var(--color-primary-rgb);
+  --bs-info: var(--garnet-light);
+  --bs-info-rgb: 243, 215, 218;
 }
 
 /* Theme Utility Classes */

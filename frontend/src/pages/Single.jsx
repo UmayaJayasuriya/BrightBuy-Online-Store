@@ -192,11 +192,12 @@ const Single = () => {
     <div className="single-page">
       {/* Page Header */}
       <div className="container-fluid page-header py-5" style={{
-        backgroundImage: 'url(/img/carousel-1.jpg)',
-        backgroundSize: '250%',
-        backgroundPosition: 'center 10%',
+        backgroundImage: 'url(/img/topbar.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        position: 'relative'
+        position: 'relative',
+        minHeight: '260px'
       }}>
         <div style={{
           position: 'absolute',
@@ -204,15 +205,15 @@ const Single = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: 'rgba(0, 0, 0, 0.45)',
           zIndex: 1
         }}></div>
         <div className="container text-center py-5" style={{ position: 'relative', zIndex: 2 }}>
-          <h1 className="display-4 text-white mb-3" style={{ fontWeight: '700' }}>{productData.product_name}</h1>
+          <h1 className="display-4 text-white mb-3 fw-bolder">{productData.product_name}</h1>
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb justify-content-center mb-0">
-              <li className="breadcrumb-item"><Link to="/">Home</Link></li>
-              <li className="breadcrumb-item"><Link to="/shop">Shop</Link></li>
+              <li className="breadcrumb-item"><Link to="/" className="text-white">Home</Link></li>
+              <li className="breadcrumb-item"><Link to="/shop" className="text-white">Shop</Link></li>
               <li className="breadcrumb-item active text-white">{productData.product_name}</li>
             </ol>
           </nav>

@@ -156,7 +156,7 @@ const Admin = () => {
         description: newProduct.description || null,
         variants: newProduct.variants.length > 0 ? newProduct.variants : null
       };
-      const res = await axios.post(`http://127.0.0.1:8020/admin/products`, payload, config);
+      const res = await axios.post('http://127.0.0.1:8020/admin/products', payload, config);
       setSuccessMessage(`Product "${res.data.product_name}" added successfully!`);
       setNewProduct({ product_name: '', category_id: '', description: '', variants: [] });
       setNewVariant({ variant_name: '', price: '', quantity: '', SKU: '' });

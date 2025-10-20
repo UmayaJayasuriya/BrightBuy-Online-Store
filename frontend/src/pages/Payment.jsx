@@ -144,10 +144,25 @@ const Payment = () => {
 
   return (
     <div className="payment-page">
-      <div className="container-fluid page-header py-5">
-        <div className="container text-center py-5">
-          <h1 className="display-4 text-white mb-3">Payment</h1>
-          <p className="text-white">Secure Card Payment</p>
+      <div className="container-fluid page-header py-5" style={{
+        backgroundImage: 'url(/img/topbar.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        position: 'relative'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 1
+        }}></div>
+        <div className="container text-center py-5" style={{ position: 'relative', zIndex: 2 }}>
+          <h1 className="display-4 text-white mb-3 fw-bolder">Payment</h1>
+          <p className="text-white fw-semibold">Secure Card Payment</p>
         </div>
       </div>
 

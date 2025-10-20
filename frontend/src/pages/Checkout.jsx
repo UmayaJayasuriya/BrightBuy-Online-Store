@@ -210,9 +210,25 @@ const Checkout = () => {
 
   return (
     <div className="checkout-page">
-      <div className="container-fluid page-header py-5">
-        <div className="container text-center py-5">
-          <h1 className="display-4 text-white mb-3">Checkout</h1>
+      <div className="container-fluid page-header py-5" style={{
+        backgroundImage: 'url(/img/topbar.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        position: 'relative',
+        minHeight: '260px'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.45)',
+          zIndex: 1
+        }}></div>
+        <div className="container text-center py-5" style={{ position: 'relative', zIndex: 2 }}>
+          <h1 className="display-4 text-white mb-3 fw-bolder">Checkout</h1>
         </div>
       </div>
 
