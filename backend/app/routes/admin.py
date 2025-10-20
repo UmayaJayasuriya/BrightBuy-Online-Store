@@ -299,3 +299,58 @@ def add_variant_to_product(
     finally:
         cursor.close()
 
+
+@router.put("/orders/{order_id}/payment-status", response_model=dict)
+def update_payment_status(
+    order_id: int,
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+    admin=Depends(get_admin_user)
+):
+    """
+    Update payment status to 'completed' for an order.
+    Primarily used for Cash on Delivery (COD) orders.
+    """
+    cursor = db.cursor(dictionary=True)
+    try:
+        # Check if order exists
+        cursor.execute("SELECT order_id FROM orders WHERE order_id = %s", (order_id,))
+        if cursor.fetchone() is None:
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        # Check if payment record exists
+        cursor.execute("SELECT payment_id, payment_status FROM payment WHERE order_id = %s", (order_id,))
+        payment = cursor.fetchone()
+        
+        if not payment:
+            raise HTTPException(status_code=404, detail="Payment record not found for this order")
+        
+        if payment['payment_status'] == 'completed':
+            return {
+                "success": True,
+                "message": "Payment is already marked as completed",
+                "order_id": order_id,
+                "payment_status": "completed"
+            }
+        
+        # Update payment status to completed
+        cursor.execute(
+            "UPDATE payment SET payment_status = 'completed' WHERE order_id = %s",
+            (order_id,)
+        )
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": f"Payment status updated to completed for order {order_id}",
+            "order_id": order_id,
+            "payment_status": "completed"
+        }
+        
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating payment status: {str(e)}")
+    finally:
+        cursor.close()

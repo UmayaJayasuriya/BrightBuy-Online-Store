@@ -225,6 +225,22 @@ const Admin = () => {
       .finally(() => setLoading(false));
   };
 
+  // Mark payment as completed
+  const markPaymentCompleted = (orderId) => {
+    setLoading(true); setError(''); setSuccessMessage('');
+    const config = axiosConfig();
+    if (!config.headers.Authorization) { setError('Not authenticated. Please log in as admin.'); setLoading(false); return; }
+    axios.put(`http://127.0.0.1:8020/admin/orders/${orderId}/payment-status`, {}, config)
+      .then((response) => {
+        setSuccessMessage(response.data.message || `Payment marked as completed for order ${orderId}`);
+        fetchOrders();
+      })
+      .catch(err => {
+        setError(err.response?.data?.detail || 'Failed to update payment status');
+      })
+      .finally(() => setLoading(false));
+  };
+
   const toggleOrderItems = async (orderId) => {
     setExpandedOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }));
     if (!expandedOrders[orderId] && !orderItems[orderId]) {
@@ -308,7 +324,20 @@ const Admin = () => {
                   </div>
                 </td>
                 <td>{o.payment_method || 'N/A'}</td>
-                <td>{o.payment_status || 'N/A'}</td>
+                <td>
+                  <div className="d-flex align-items-center gap-2">
+                    <span>{o.payment_status || 'N/A'}</span>
+                    {(o.payment_status || '').toLowerCase() === 'pending' && (o.payment_method || '').toLowerCase() === 'cod' && (
+                      <button
+                        className="btn btn-sm btn-warning"
+                        onClick={() => markPaymentCompleted(o.order_id)}
+                        disabled={loading}
+                      >
+                        Mark Paid
+                      </button>
+                    )}
+                  </div>
+                </td>
                 <td>
                   <button className="btn btn-sm btn-info" onClick={() => toggleOrderItems(o.order_id)}>
                     {expandedOrders[o.order_id] ? '▼ Hide Products' : '▶ View Products'}
