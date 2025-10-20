@@ -170,7 +170,15 @@ const Single = () => {
     } catch (err) {
       console.error('Error deleting variant:', err);
       const errorMessage = err.response?.data?.detail || 'Failed to delete variant. Please try again.';
-      alert(errorMessage);
+      
+      // Show a more user-friendly error message for order-related deletions
+      if (errorMessage.includes('existing orders') || errorMessage.includes('part of existing orders')) {
+        alert(
+          `The variant "${selectedVariant.variant_name}" cannot be deleted because it is part of existing customer orders.`
+        );
+      } else {
+        alert(`Error: ${errorMessage}`);
+      }
     } finally {
       setDeletingVariant(false);
     }
@@ -335,7 +343,8 @@ const Single = () => {
                           cursor: 'pointer',
                           borderRadius: '8px',
                           overflow: 'hidden',
-                          transition: 'all 0.3s ease'
+                          transition: 'all 0.3s ease',
+                          position: 'relative'
                         }}
                         onClick={() => handleVariantSelect(variant)}
                       >
@@ -352,6 +361,25 @@ const Single = () => {
                             }
                           }}
                         />
+                        {/* Out of Stock Badge */}
+                        {variant.quantity < 1 && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: '5px',
+                              right: '5px',
+                              backgroundColor: '#dc3545',
+                              color: 'white',
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              zIndex: 10
+                            }}
+                          >
+                            Out of Stock
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

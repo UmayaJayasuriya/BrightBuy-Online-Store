@@ -216,7 +216,7 @@ def delete_variant(
 ):
     cursor = db.cursor(dictionary=True)
     try:
-        # Check if variant exists in any orders
+        # Check if variant exists in any orders (pre-check before trigger)
         cursor.execute(
             "SELECT COUNT(*) as count FROM order_item WHERE variant_id = %s",
             (variant_id,)
@@ -225,9 +225,10 @@ def delete_variant(
         if result and result['count'] > 0:
             raise HTTPException(
                 status_code=400,
-                detail="Cannot delete variant: it is referenced in existing orders"
+                detail="Cannot delete this variant: This variant is part of existing orders and cannot be removed. Orders must be preserved for record-keeping."
             )
-        # Delete the variant
+        
+        # Delete the variant (trigger will also check for order references)
         cursor.execute("DELETE FROM variant WHERE variant_id = %s", (variant_id,))
         if cursor.rowcount == 0:
             raise HTTPException(status_code=404, detail="Variant not found")
@@ -238,16 +239,22 @@ def delete_variant(
         raise
     except mysql.connector.Error as e:
         db.rollback()
-        # Handle foreign key constraint error
-        if e.errno == 1451:  # Cannot delete or update a parent row
+        # Handle trigger error (SQLSTATE 45000)
+        if e.errno == 1644:  # Trigger SIGNAL error
             raise HTTPException(
                 status_code=400,
-                detail="Cannot delete variant: it is referenced in existing orders"
+                detail="Cannot delete this variant: This variant is part of existing orders and cannot be removed."
             )
-        raise HTTPException(status_code=500, detail=str(e))
+        # Handle foreign key constraint error
+        elif e.errno == 1451:  # Cannot delete or update a parent row
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot delete this variant: This variant is part of existing orders and cannot be removed."
+            )
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error deleting variant: {str(e)}")
     finally:
         cursor.close()
 
