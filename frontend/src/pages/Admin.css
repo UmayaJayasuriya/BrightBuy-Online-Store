@@ -111,3 +111,50 @@
   border-width: 0.3rem;
   color: #3498db;
 }
+
+/* Category button styling - override Bootstrap blue with custom purple */
+.products-section .btn-outline-primary,
+.quantities-section .btn-outline-primary {
+  color: #341539 !important;
+  border-color: #341539 !important;
+  background-color: transparent;
+}
+
+.products-section .btn-outline-primary:hover,
+.quantities-section .btn-outline-primary:hover {
+  color: #ffffff !important;
+  background-color: #341539 !important;
+  border-color: #341539 !important;
+}
+
+.products-section .btn-outline-primary.active,
+.quantities-section .btn-outline-primary.active {
+  color: #ffffff !important;
+  background-color: #341539 !important;
+  border-color: #341539 !important;
+}
+
+/* View Products button styling in orders section */
+.orders-section .btn-info {
+  background-color: #341539 !important;
+  border-color: #341539 !important;
+  color: #ffffff !important;
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 0.375rem 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.orders-section .btn-info:hover {
+  background-color: #2a0e2e !important;
+  border-color: #2a0e2e !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(52, 21, 57, 0.3);
+}
+
+.orders-section .btn-info:focus {
+  background-color: #341539 !important;
+  border-color: #341539 !important;
+  box-shadow: 0 0 0 0.2rem rgba(52, 21, 57, 0.25);
+}
