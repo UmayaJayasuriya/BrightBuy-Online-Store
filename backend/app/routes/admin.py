@@ -4,6 +4,7 @@ import mysql.connector
 from app.database import get_db
 from app.security import get_admin_user
 from app.schemas.product import ProductCreate
+from app.schemas.variant import VariantCreate
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -244,6 +245,47 @@ def delete_variant(
                 detail="Cannot delete variant: it is referenced in existing orders"
             )
         raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+
+@router.post("/products/{product_id}/variants", response_model=dict, status_code=201)
+def add_variant_to_product(
+    product_id: int,
+    variant: VariantCreate = Body(...),
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+    admin=Depends(get_admin_user)
+):
+    """Add a new variant to an existing product."""
+    cursor = db.cursor(dictionary=True)
+    try:
+        # Optionally ensure product exists
+        cursor.execute("SELECT product_id FROM product WHERE product_id = %s", (product_id,))
+        if cursor.fetchone() is None:
+            raise HTTPException(status_code=404, detail="Product not found")
+
+        cursor.execute(
+            """
+            INSERT INTO variant (variant_name, product_id, price, quantity, SKU)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (variant.variant_name, product_id, variant.price, variant.quantity, variant.SKU)
+        )
+        db.commit()
+        variant_id = cursor.lastrowid
+        return {
+            "variant_id": variant_id,
+            "variant_name": variant.variant_name,
+            "product_id": product_id,
+            "price": variant.price,
+            "quantity": variant.quantity,
+            "SKU": variant.SKU,
+        }
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
