@@ -128,11 +128,21 @@ def delete_product(
                 detail=f"Cannot delete product: it has {result['count']} order(s). Please archive instead of delete."
             )
         
-        print(f"DEBUG: No orders found, deleting variants...")
-        
-        # Delete variants first (due to foreign key constraint)
-        cursor.execute("DELETE FROM variant WHERE product_id = %s", (product_id,))
-        variants_deleted = cursor.rowcount
+        print(f"DEBUG: No orders found, deleting variants one by one...")
+        # Fetch all variant IDs for this product
+        cursor.execute("SELECT variant_id FROM variant WHERE product_id = %s", (product_id,))
+        variant_ids = [row['variant_id'] for row in cursor.fetchall()]
+        variants_deleted = 0
+        for variant_id in variant_ids:
+            try:
+                # Call the delete_variant logic directly
+                # (simulate a request, but pass db and admin context)
+                delete_variant(variant_id, db=db, admin=admin)
+                variants_deleted += 1
+            except HTTPException as ve:
+                print(f"DEBUG: Could not delete variant {variant_id}: {ve.detail}")
+                # Optionally, you can choose to raise or skip
+                continue
         print(f"DEBUG: Deleted {variants_deleted} variants")
         
         # Delete favorites related to this product (if table exists)
