@@ -1,0 +1,65 @@
+/* Shop Page Styles */
+.page-header {
+  color: var(--papaya-whip) !important;
+  position: relative;
+}
+
+.page-header h1,
+.page-header .breadcrumb-item,
+.page-header .breadcrumb-item.active {
+  color: var(--papaya-whip) !important;
+}
+
+.shop-sidebar {
+  position: sticky;
+  top: 100px;
+}
+
+.sidebar-widget {
+  background: var(--papaya-whip);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.sidebar-widget h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--prussian-blue);
+}
+
+.sidebar-widget .btn-link {
+  padding: 0;
+  text-align: left;
+  width: 100%;
+  color: var(--prussian-blue);
+  transition: all 0.3s ease;
+}
+
+.sidebar-widget .btn-link:hover {
+  color: var(--fire-brick) !important;
+  padding-left: 10px;
+}
+
+.shop-toolbar {
+  border: 1px solid var(--border-color);
+  background: var(--papaya-whip);
+}
+
+.pagination .page-link {
+  color: var(--fire-brick);
+  border-color: var(--border-color);
+}
+
+.pagination .page-link:hover {
+  background: var(--air-superiority-blue);
+  color: var(--papaya-whip);
+  border-color: var(--air-superiority-blue);
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--gradient-primary);
+  border-color: var(--fire-brick);
+  color: var(--papaya-whip);
+}

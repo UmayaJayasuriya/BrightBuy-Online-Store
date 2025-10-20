@@ -1,0 +1,38 @@
+/* Topbar Styles */
+.topbar {
+  background: var(--papaya-whip) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.topbar a {
+  color: var(--prussian-blue) !important;
+  transition: all 0.3s ease;
+}
+
+.topbar a:hover {
+  color: var(--fire-brick) !important;
+}
+
+.topbar .text-muted {
+  color: var(--air-superiority-blue) !important;
+}
+
+.topbar .text-dark {
+  color: var(--prussian-blue) !important;
+}
+
+.dropdown-menu {
+  background: var(--papaya-whip) !important;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.dropdown-item {
+  color: var(--prussian-blue) !important;
+  transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background: var(--gradient-primary) !important;
+  color: var(--papaya-whip) !important;
+}

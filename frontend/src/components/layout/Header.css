@@ -1,0 +1,252 @@
+/* Header Styles */
+.badge {
+  font-size: 0.65rem;
+  padding: 0.25em 0.5em;
+  background: var(--gradient-primary) !important;
+  color: var(--papaya-whip) !important;
+}
+
+/* Cart count inside the circular cart icon: make the number text red for visibility */
+.btn-md-square .badge {
+  color: #dc3545 !important; /* bootstrap danger red */
+  background: var(--color-surface) !important; /* neutral surface so red stands out */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  font-weight: 800 !important;
+}
+
+/* Logo Enhancement */
+/* If you host the 'Guzzy' font, import it in your global CSS or index.html like:
+   @font-face { font-family: 'Guzzy'; src: url('/fonts/Guzzy.woff2') format('woff2'); font-weight: 400 800; font-style: normal; }
+   Or use a web font provider if available. */
+.navbar-brand h1 {
+  color: var(--brand-color) !important;
+  font-family: var(--brand-font) !important;
+  font-weight: 800 !important;
+}
+.navbar-brand .text-secondary {
+  color: var(--air-superiority-blue) !important;
+}
+
+/* Search Bar Enhancement */
+.form-control {
+  border-color: var(--border-color);
+  background: #ffffff !important; /* white background for search input */
+  color: var(--prussian-blue) !important;
+}
+
+.form-control:focus {
+  border-color: var(--fire-brick);
+  box-shadow: 0 0 0 0.15rem rgba(193, 18, 31, 0.15);
+  background: #ffffff !important;
+}
+
+.form-select {
+  border-color: var(--border-color);
+  color: var(--prussian-blue);
+  background: #ffffff !important; /* white background for select */
+}
+
+.form-select:focus {
+  border-color: var(--fire-brick);
+  box-shadow: 0 0 0 0.15rem rgba(193, 18, 31, 0.15);
+}
+
+/* Icon Enhancement */
+.btn-md-square {
+  border-color: var(--border-color) !important;
+  color: var(--prussian-blue) !important;
+  background: var(--papaya-whip) !important;
+  transition: all 0.3s ease;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-md-square i {
+  font-size: 1.1rem;
+}
+
+.btn-md-square:hover {
+  border-color: var(--fire-brick) !important;
+  color: var(--fire-brick) !important;
+  background: rgba(193, 18, 31, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+/* Login oval button in header */
+.login-oval {
+  background: linear-gradient(135deg, var(--fire-brick), var(--air-superiority-blue));
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.login-oval:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+/* Sign-up oval button (matches login style) */
+.signup-oval {
+  background: linear-gradient(135deg, var(--air-superiority-blue), var(--fire-brick));
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.signup-oval:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.text-dark {
+  color: var(--prussian-blue) !important;
+}
+
+/* Cart Total Enhancement */
+.text-muted {
+  color: var(--air-superiority-blue) !important;
+}
+
+/* User greeting alignment */
+.user-greeting {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logout-link {
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+}
+
+/* Make the greeting more visible (override small/text-muted) */
+.user-greeting,
+.user-greeting span,
+.user-greeting small {
+  color: var(--prussian-blue) !important;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Username inside the greeting should be bolder and use primary color */
+.user-greeting .text-primary,
+.user-greeting strong {
+  color: var(--bs-primary) !important;
+  font-weight: 800 !important;
+  text-decoration: none;
+}
+
+/* Logout link adjustments: clearer, spaced and accessible */
+.user-greeting .logout-link {
+  margin-left: 0.6rem;
+  color: var(--danger, #dc3545) !important;
+  font-weight: 700 !important; /* stronger weight */
+  text-decoration: none !important;
+  border: 1px solid rgba(220,53,69,0.18);
+  background: rgba(220,53,69,0.03);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.user-greeting .logout-link:hover,
+.user-greeting .logout-link:focus {
+  background: rgba(220,53,69,0.12);
+  color: var(--danger, #c82333) !important;
+  text-decoration: none !important;
+  outline: none;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+/* Shiny gradient and pulse animation for logout */
+.user-greeting .logout-link {
+  background-image: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.0));
+  position: relative;
+  overflow: hidden;
+}
+.user-greeting .logout-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.0), rgba(255,255,255,0.45), rgba(255,255,255,0.0));
+  transform: skewX(-25deg);
+  transition: transform 0.9s ease-in-out, left 0.9s ease-in-out;
+}
+.user-greeting .logout-link:hover::before {
+  left: 120%;
+}
+.user-greeting .logout-link.shiny-pulse {
+  animation: pulse 3.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(220,53,69,0.06); }
+  50% { box-shadow: 0 6px 18px rgba(220,53,69,0.08); }
+  100% { box-shadow: 0 0 0 0 rgba(220,53,69,0.06); }
+}
+
+/* Header greeting background - keep it white and visually separated */
+.header-greeting {
+  background: #ffffff !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+}
+
+.header-greeting .user-greeting {
+  padding: 0.25rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Shiny username gradient */
+.user-greeting .text-primary {
+  color: #66347F !important; /* plain purple */
+  font-weight: 800 !important;
+}
+
+/* Sheen animation over the greeting */
+.user-greeting {
+  position: relative;
+  overflow: hidden;
+}
+.user-greeting::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: -60%;
+  width: 40%;
+  height: 180%;
+  transform: rotate(25deg);
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%);
+  opacity: 0.0;
+  transition: none;
+}
+.user-greeting:hover::after {
+  animation: sheen 1s ease-in-out forwards;
+}
+@keyframes sheen {
+  from { left: -60%; opacity: 0; }
+  50% { left: 40%; opacity: 0.9; }
+  to { left: 140%; opacity: 0; }
+}
+
+/* Glossy logout pill */
+.user-greeting .logout-link {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
+  border: 1px solid rgba(0,0,0,0.05);
+  backdrop-filter: blur(2px);
+}
+
+.user-greeting .logout-link:active {
+  transform: translateY(1px);
+}

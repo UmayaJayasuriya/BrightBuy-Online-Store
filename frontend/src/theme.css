@@ -1,0 +1,229 @@
+/* Theme Configuration - Electronics Website */
+/* Central color palette and styling variables */
+
+:root {
+  /* Map existing theme variables to Mermaid Garnet Symphony palette */
+  /* This ties the theme into the centralized palette defined in mermaid-garnet-symphony.css */
+  /* Legacy token mapping -> Amethyst palette */
+  --barn-red: var(--color-primary);
+  --fire-brick: var(--color-accent);
+  --papaya-whip: var(--color-primary-contrast);
+  --prussian-blue: var(--color-text);
+  --air-superiority-blue: var(--color-accent);
+
+  /* Bootstrap Variable Overrides (mapped to palette) */
+  --bs-primary: var(--color-primary);
+  --bs-primary-rgb: var(--color-primary-rgb);
+
+  --bs-secondary: var(--color-accent);
+  --bs-secondary-rgb: var(--color-accent-rgb);
+
+  --bs-light: var(--color-background);
+  --bs-light-rgb: 247, 250, 249; /* fallback soft background rgb */
+
+  --bs-dark: var(--symphony-ink);
+  --bs-dark-rgb: var(--color-text-rgb);
+
+  --bs-danger: var(--color-danger);
+  --bs-danger-rgb: 123, 31, 46;
+
+  --bs-body-color: var(--color-text);
+  --bs-body-color-rgb: var(--color-text-rgb);
+  --bs-white: var(--symphony-surface);
+  --bs-white-rgb: 255, 255, 255;
+
+  /* Gradient Variables (use palette) */
+  --gradient-primary: var(--gradient-primary);
+  --gradient-secondary: var(--gradient-accent);
+  --gradient-hero: linear-gradient(135deg, var(--color-primary), var(--color-accent), var(--color-primary-contrast));
+  --gradient-radial: radial-gradient(circle, var(--color-primary), var(--color-accent));
+  --gradient-banner: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 50%, var(--color-primary-contrast) 100%);
+
+  /* Shadow and Border Colors */
+  --shadow-color: rgba(11, 20, 25, 0.08);
+  --border-color: rgba(40, 161, 153, 0.12);
+  --border-light: rgba(243, 215, 218, 0.85);
+
+  /* Additional Theme Colors */
+  /* Brand and layout tokens */
+  /* Use the Shop Now / primary button color for navbar background */
+  --navbar-bg: var(--color-primary);
+  /* Use the contrast token for readable navbar text */
+  --navbar-text: var(--papaya-whip);
+  /* Brand font and color (BrightBuy) */
+  --brand-font: 'Guzzy', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --brand-color: #2b0b1a; /* darker brand color for improved contrast */
+  --footer-bg: var(--mermaid-deep);
+  --footer-text: var(--garnet-light);
+  --card-bg: var(--garnet-light);
+  --card-border: var(--border-color);
+
+  /* Interactive States */
+  --hover-primary: var(--garnet-deep);
+  --hover-secondary: var(--mermaid-deep);
+  --active-state: var(--garnet-mid);
+
+  /* Success, Warning, Info colors using palette */
+  --bs-success: var(--mermaid-mid);
+  --bs-success-rgb: var(--color-accent-rgb);
+  --bs-warning: var(--garnet-mid);
+  --bs-warning-rgb: var(--color-primary-rgb);
+  --bs-info: var(--garnet-light);
+  --bs-info-rgb: 243, 215, 218;
+}
+
+/* Theme Utility Classes */
+.bg-barn-red { background-color: var(--barn-red) !important; }
+.bg-fire-brick { background-color: var(--fire-brick) !important; }
+.bg-papaya-whip { background-color: var(--papaya-whip) !important; }
+.bg-prussian-blue { background-color: var(--prussian-blue) !important; }
+.bg-air-superiority-blue { background-color: var(--air-superiority-blue) !important; }
+
+.text-barn-red { color: var(--barn-red) !important; }
+.text-fire-brick { color: var(--fire-brick) !important; }
+.text-papaya-whip { color: var(--papaya-whip) !important; }
+.text-prussian-blue { color: var(--prussian-blue) !important; }
+.text-air-superiority-blue { color: var(--air-superiority-blue) !important; }
+
+.border-barn-red { border-color: var(--barn-red) !important; }
+.border-fire-brick { border-color: var(--fire-brick) !important; }
+.border-papaya-whip { border-color: var(--papaya-whip) !important; }
+.border-prussian-blue { border-color: var(--prussian-blue) !important; }
+.border-air-superiority-blue { border-color: var(--air-superiority-blue) !important; }
+
+/* Gradient Classes */
+.bg-gradient-primary {
+  background: var(--gradient-primary) !important;
+  color: var(--papaya-whip) !important;
+}
+
+.bg-gradient-secondary {
+  background: var(--gradient-secondary) !important;
+  color: var(--papaya-whip) !important;
+}
+
+.bg-gradient-hero {
+  background: var(--gradient-hero) !important;
+  color: var(--papaya-whip) !important;
+}
+
+.bg-gradient-banner {
+  background: var(--gradient-banner) !important;
+  color: var(--papaya-whip) !important;
+}
+
+.bg-gradient-radial {
+  background: var(--gradient-radial) !important;
+  color: var(--papaya-whip) !important;
+}
+
+/* Enhanced Button Styles */
+.btn-primary {
+  background: var(--gradient-primary) !important;
+  border: none !important;
+  color: var(--papaya-whip) !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: var(--hover-primary) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.btn-secondary {
+  background: var(--gradient-secondary) !important;
+  border: none !important;
+  color: var(--papaya-whip) !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--hover-secondary) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* Card Enhancements */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+/* Form Controls */
+.form-control:focus {
+  border-color: var(--fire-brick);
+  box-shadow: 0 0 0 0.2rem rgba(193, 18, 31, 0.25);
+}
+
+/* Navigation Enhancements */
+.navbar {
+  background: var(--navbar-bg) !important;
+}
+
+.navbar .nav-link {
+  color: var(--navbar-text) !important;
+  transition: all 0.3s ease;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+  color: var(--papaya-whip) !important;
+  text-shadow: 0 0 8px rgba(253, 240, 213, 0.5);
+}
+
+/* Footer Enhancements */
+.footer {
+  background: var(--footer-bg) !important;
+  color: var(--footer-text) !important;
+}
+
+/* Hero Section Enhancements */
+.hero-section {
+  background: var(--gradient-hero);
+  color: var(--papaya-whip);
+}
+
+/* Page Header Enhancements */
+.page-header {
+  color: var(--papaya-whip) !important;
+}
+
+/* Product Card Enhancements */
+.product-card:hover {
+  box-shadow: 0 8px 24px var(--shadow-color);
+}
+
+/* Text Contrast Helpers */
+.text-on-dark {
+  color: var(--papaya-whip) !important;
+}
+
+.text-on-light {
+  color: var(--prussian-blue) !important;
+}
+
+/* Animation Classes */
+.gradient-animate {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Print Styles */
+@media print {
+  :root {
+    --bs-primary: #000;
+    --bs-secondary: #666;
+    --bs-dark: #000;
+    --bs-light: #fff;
+  }
+}

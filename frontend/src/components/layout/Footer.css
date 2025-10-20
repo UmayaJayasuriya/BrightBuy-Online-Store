@@ -1,0 +1,315 @@
+/* Enhanced Footer Styles with Eye-Friendly Colors */
+.footer {
+  background: #66347F !important;
+  color: #ecf0f1 !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(52, 152, 219, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(155, 89, 182, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.footer .container {
+  position: relative;
+  z-index: 1;
+}
+
+.footer h4 {
+  color:#D0ADC4 !important;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  position: relative;
+  padding-bottom: 12px;
+  margin-bottom: 1.5rem !important;
+}
+
+.footer h4::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(90deg, #D0ADC4,#C889B5);
+  border-radius: 2px;
+  box-shadow: 0 0 10px #736EAE;
+}
+
+.footer p {
+  color: #bdc3c7 !important;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.footer a {
+  color: #ecf0f1 !important;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  display: block;
+  padding: 0.4rem 0;
+  position: relative;
+  font-size: 0.95rem;
+}
+
+.footer a::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background: #D0ADC4;
+  transition: width 0.3s ease;
+}
+
+.footer a:hover {
+  color:#D0ADC4 !important;
+  padding-left: 0.75rem;
+  text-shadow: 0 0 12px rgba(52, 152, 219, 0.5);
+  transform: translateX(3px);
+}
+
+.footer a:hover::before {
+  width: 30px;
+}
+
+.footer a i.fas.fa-angle-right {
+  transition: transform 0.3s ease;
+  color:#C889B5;
+}
+
+.footer a:hover i.fas.fa-angle-right {
+  transform: translateX(5px);
+  color: #D0ADC4;
+}
+
+.footer .btn-primary {
+  background: linear-gradient(135deg, #D0ADC4 0%, #C889B5 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.footer .btn-primary:hover {
+   background: linear-gradient(135deg, #613551 0%, #491038 100%) !important;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px #736EAE;
+}
+
+.footer .form-control {
+  border: 2px solid #5dade2;
+  background: #ffffff;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  color: #2c3e50;
+}
+
+.footer .form-control:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25), 0 4px 15px rgba(52, 152, 219, 0.2);
+  background: #ffffff;
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.footer .form-control::placeholder {
+  color: #95a5a6;
+}
+
+/* Enhanced Contact Info Cards in Footer */
+.footer .row.g-4.rounded {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.footer .rounded.p-4 {
+  transition: all 0.3s ease;
+  border-radius: 12px !important;
+}
+
+.footer .rounded.p-4:hover {
+  transform: translateY(-8px);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.footer .rounded-circle {
+  background: linear-gradient(135deg, #5dade2 0%, #48c9b0 100%) !important;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 15px rgba(93, 173, 226, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.footer .rounded-circle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.5s ease;
+}
+
+.footer .rounded.p-4:hover .rounded-circle {
+  transform: rotate(360deg) scale(1.1);
+  box-shadow: 0 6px 25px rgba(46, 204, 113, 0.4);
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
+}
+
+.footer .rounded.p-4:hover .rounded-circle::before {
+  width: 100%;
+  height: 100%;
+}
+
+.footer .rounded-circle i {
+  color: #ffffff !important;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.footer .rounded.p-4:hover .rounded-circle i {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+}
+
+/* Copyright Section */
+.copyright {
+  background: linear-gradient(90deg, #1a252f 0%, #2c3e50 100%) !important;
+  color: #ecf0f1 !important;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.copyright::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.3), transparent);
+}
+
+.copyright a {
+  color: #3498db !important;
+  border-bottom: 2px solid transparent !important;
+  transition: all 0.3s ease;
+  display: inline-block;
+  padding: 0 4px;
+}
+
+.copyright a:hover {
+  color: #2ecc71 !important;
+  border-bottom-color: #2ecc71 !important;
+  text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+  transform: translateY(-2px);
+}
+
+.copyright i.fas.fa-copyright {
+  animation: pulse 2s ease-in-out infinite;
+  color: #3498db;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Newsletter Section Enhancements */
+.footer .footer-item form {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.footer .footer-item form:hover {
+  box-shadow: 0 6px 25px rgba(52, 152, 219, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Additional Text Color Refinements */
+.footer .text-white {
+  color: #ecf0f1 !important;
+}
+
+.footer .text-primary {
+  color: #3498db !important;
+}
+
+.footer .bg-secondary {
+  background: linear-gradient(135deg, #5dade2 0%, #48c9b0 100%) !important;
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+  .footer h4::after {
+    width: 40px;
+  }
+  
+  .footer .rounded.p-4:hover {
+    transform: translateY(-5px);
+  }
+}
+
+/* Smooth scroll behavior for footer links */
+.footer a {
+  scroll-behavior: smooth;
+}
+
+/* Add subtle animation on load */
+.footer .footer-item {
+  animation: fadeInUp 0.6s ease-out backwards;
+}
+
+.footer .footer-item:nth-child(1) { animation-delay: 0.1s; }
+.footer .footer-item:nth-child(2) { animation-delay: 0.2s; }
+.footer .footer-item:nth-child(3) { animation-delay: 0.3s; }
+.footer .footer-item:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced readability for long reading */
+.footer .footer-item p {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Softer focus states */
+.footer .form-control:focus {
+  border-color: #5dade2;
+}
+
+/* Consistent icon colors */
+.footer i {
+  transition: color 0.3s ease;
+}

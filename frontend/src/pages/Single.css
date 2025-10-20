@@ -1,0 +1,111 @@
+/* Single Product Page Styles */
+.single-page .page-header {
+  color: var(--papaya-whip) !important;
+}
+
+.single-page .page-header h1,
+.single-page .page-header .breadcrumb-item,
+.single-page .page-header .breadcrumb-item.active {
+  color: var(--papaya-whip) !important;
+}
+
+/* Ensure breadcrumb links (Home / Shop) in the header are white and stay white on hover/focus */
+.single-page .page-header .breadcrumb-item a {
+  color: #ffffff !important;
+}
+
+.single-page .page-header .breadcrumb-item a:hover,
+.single-page .page-header .breadcrumb-item a:focus,
+.single-page .page-header .breadcrumb-item a:visited {
+  color: #ffffff !important;
+  text-decoration: underline;
+}
+
+.product-images .main-image {
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 2px solid var(--border-color);
+}
+
+.product-images .main-image img {
+  transition: transform 0.3s;
+}
+
+.product-images .main-image:hover img {
+  transform: scale(1.05);
+}
+
+.image-thumbnails .img-thumbnail {
+  cursor: pointer;
+  transition: all 0.3s;
+  border-color: var(--border-color);
+}
+
+.image-thumbnails .img-thumbnail:hover,
+.image-thumbnails .img-thumbnail.border-primary {
+  border-color: var(--fire-brick);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.quantity-selector input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  border-color: var(--border-color);
+}
+
+.quantity-selector input[type='number']:focus {
+  border-color: var(--fire-brick);
+  box-shadow: 0 0 0 0.2rem rgba(193, 18, 31, 0.25);
+}
+
+.quantity-selector input[type='number']::-webkit-outer-spin-button,
+.quantity-selector input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quantity-selector .btn-outline-secondary {
+  border-color: var(--air-superiority-blue);
+  color: var(--air-superiority-blue);
+}
+
+.quantity-selector .btn-outline-secondary:hover {
+  background: var(--air-superiority-blue);
+  color: var(--papaya-whip);
+}
+
+.social-share a {
+  width: 35px;
+  height: 35px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.social-share a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* Product Details Enhancements */
+.product-details h2 {
+  color: var(--prussian-blue);
+}
+
+.product-details .text-primary {
+  color: var(--fire-brick) !important;
+}
+
+.product-details .badge.bg-danger {
+  background: var(--gradient-primary) !important;
+}
+
+.product-details .text-warning {
+  color: var(--fire-brick) !important;
+}

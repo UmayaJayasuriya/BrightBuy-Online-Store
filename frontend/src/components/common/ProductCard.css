@@ -1,0 +1,121 @@
+/* ProductCard Styles */
+.product-card {
+  margin-bottom: 1.5rem;
+}
+
+.product-item {
+  transition: transform 0.3s, box-shadow 0.3s;
+  overflow: hidden;
+  background: var(--papaya-whip);
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.product-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px var(--shadow-color);
+  border-color: var(--fire-brick) !important;
+}
+
+.product-item .position-relative {
+  overflow: hidden;
+}
+
+.product-item img {
+  transition: transform 0.5s;
+}
+
+.product-item:hover img {
+  transform: scale(1.1);
+}
+
+.product-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+}
+
+.product-badge .badge {
+  background: var(--gradient-primary) !important;
+  color: var(--papaya-whip) !important;
+}
+
+.product-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.product-item:hover .product-overlay {
+  opacity: 1;
+}
+
+.product-overlay .btn {
+  background: var(--fire-brick) !important;
+  border-color: var(--fire-brick) !important;
+  color: var(--papaya-whip) !important;
+}
+
+.product-overlay .btn:hover {
+  background: var(--barn-red) !important;
+  border-color: var(--barn-red) !important;
+  transform: scale(1.1);
+}
+
+.product-content {
+  background: var(--papaya-whip);
+  color: var(--prussian-blue);
+}
+
+.product-content a {
+  text-decoration: none;
+  transition: color 0.3s;
+  color: var(--prussian-blue);
+}
+
+.product-content a:hover {
+  color: var(--fire-brick) !important;
+}
+
+.product-content .text-primary {
+  color: var(--fire-brick) !important;
+}
+
+.product-content .text-muted {
+  color: var(--air-superiority-blue) !important;
+}
+
+.text-warning {
+  font-size: 0.875rem;
+  color: var(--fire-brick) !important;
+}
+
+/* Button Enhancements in Product Cards */
+.product-content .btn-primary {
+  /* Use semantic primary color for the View Product button so theme swaps apply */
+  background: var(--color-primary) !important;
+  border: none !important;
+  color: var(--papaya-whip) !important;
+}
+
+.product-content .btn-primary:hover {
+  /* Hover uses accent color for a noticeable but harmonious effect */
+  background: var(--color-accent) !important;
+  transform: translateY(-2px);
+}
+
+.product-content .btn-outline-primary {
+  border-color: var(--fire-brick) !important;
+  color: var(--fire-brick) !important;
+  background: transparent !important;
+}
+
+.product-content .btn-outline-primary:hover {
+  background: var(--fire-brick) !important;
+  border-color: var(--fire-brick) !important;
+  color: var(--papaya-whip) !important;
+}

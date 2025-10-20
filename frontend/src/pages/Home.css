@@ -1,0 +1,351 @@
+/* Home Page Styles */
+.home-page {
+  min-height: 100vh;
+}
+
+/* Hero Carousel Layout - Proper Grid System */
+.header-carousel {
+  min-height: 500px;
+  background: var(--papaya-whip);
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.carousel-image {
+  transition: opacity 0.5s ease-in-out;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-image.active {
+  animation: fadeIn 0.5s;
+}
+
+.carousel-text-content {
+  transition: opacity 0.5s ease-in-out;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 500px;
+}
+
+.carousel-text-content.active {
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.carousel-header-banner {
+  position: relative;
+  overflow: hidden;
+  min-height: 500px;
+  height: 100%;
+  background: none !important;
+}
+
+.carousel-header-banner::before,
+.carousel-header-banner::after {
+  content: none !important;
+  display: none !important;
+}
+
+.carousel-header-banner * {
+  background: none !important;
+}
+
+@media (max-width: 768px) {
+  .carousel-header-banner {
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 576px) {
+  .carousel-header-banner {
+    min-height: 350px;
+  }
+}
+
+.carousel-header-banner img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.carousel-banner-offer {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.carousel-banner {
+  position: absolute;
+  bottom: 30px;
+  left: 20px;
+  right: 20px;
+  text-align: center;
+  z-index: 3;
+  padding: 20px;
+}
+
+.carousel-banner .btn-warning {
+  background: #ff8c00 !important;
+  border: none;
+  color: white !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.carousel-banner .btn-warning:hover {
+  background: #ff6b00 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4);
+}
+
+.carousel-banner-offer .badge {
+  background: #ff8c00 !important;
+  color: white !important;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+/* Ensure proper spacing and alignment */
+.carousel-img img {
+  max-height: 400px;
+  width: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .header-carousel {
+    min-height: auto;
+  }
+  
+  .carousel-text-content {
+    text-align: center;
+    padding: 2rem 1rem;
+    min-height: auto;
+  }
+  
+  .carousel-image {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .carousel-header-banner {
+    min-height: 400px;
+    margin-top: 2rem;
+  }
+}
+
+/* Product Banner Items with Gradient Overlays */
+.product-banner-item {
+  overflow: hidden;
+  border-radius: 0.5rem;
+  position: relative;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-banner-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-banner);
+  opacity: 0.7;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+
+.product-banner-item:hover::before {
+  opacity: 0.5;
+}
+
+.product-banner-item img {
+  transition: transform 0.5s;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  min-height: 300px;
+}
+
+.product-banner-item:hover img {
+  transform: scale(1.1);
+}
+
+.product-banner-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  text-align: center;
+  width: 100%;
+  padding: 0 20px;
+}
+
+.product-banner-content h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.product-banner-content p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.product-banner-content .btn {
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.product-banner-content .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-carousel {
+    min-height: 400px;
+  }
+  
+  .header-carousel-item {
+    min-height: 400px;
+  }
+  
+  .carousel-content {
+    min-height: auto;
+    text-align: center;
+    padding: 2rem 1rem !important;
+  }
+  
+  .carousel-img {
+    margin-bottom: 2rem;
+  }
+  
+  .carousel-header-banner {
+    min-height: 300px;
+    margin-top: 2rem;
+  }
+  
+  .product-banner-content h3 {
+    font-size: 1.5rem;
+  }
+  
+  .product-banner-content p {
+    font-size: 0.9rem;
+  }
+  
+  .product-banner-content .btn {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .carousel-content h1 {
+    font-size: 2rem !important;
+  }
+  
+  .carousel-content h4 {
+    font-size: 1rem !important;
+  }
+}
+
+/* Section Titles with Theme Colors */
+.section-title h1 {
+  position: relative;
+  display: inline-block;
+  color: var(--prussian-blue);
+}
+
+.section-title h1::after {
+  content: '';
+  position: absolute;
+  width: 50%;
+  height: 3px;
+  background: var(--gradient-primary);
+  bottom: -10px;
+  left: 25%;
+}
+
+/* Newsletter Section Enhancement */
+.newsletter {
+  background: var(--gradient-secondary) !important;
+  color: var(--papaya-whip) !important;
+}
+
+.newsletter h2 {
+  color: var(--papaya-whip) !important;
+}
+
+.newsletter p {
+  color: var(--papaya-whip) !important;
+}
+
+/* Services Section Enhancement */
+.service-item:hover {
+  background: var(--gradient-radial);
+  color: var(--papaya-whip);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px var(--shadow-color);
+}
+
+.service-item .fa-3x {
+  color: var(--fire-brick);
+  transition: all 0.3s ease;
+}
+
+.service-item:hover .fa-3x {
+  color: var(--papaya-whip);
+  transform: scale(1.1);
+}
+
+.wow {
+  visibility: visible !important;
+  animation-name: fadeInUp;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

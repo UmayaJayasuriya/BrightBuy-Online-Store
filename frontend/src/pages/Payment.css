@@ -1,0 +1,110 @@
+/**
+ * Payment Page Styles
+ */
+
+.payment-page {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.payment-page .page-header {
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #81c408 100%);
+  background-size: cover;
+}
+
+.payment-page .card {
+  border-radius: 15px;
+  transition: transform 0.3s ease;
+}
+
+.payment-page .card:hover {
+  transform: translateY(-5px);
+}
+
+.payment-icons i {
+  transition: transform 0.3s ease;
+}
+
+.payment-icons i:hover {
+  transform: scale(1.1);
+}
+
+.payment-page .form-control {
+  border-radius: 10px;
+  border: 2px solid #e9ecef;
+  padding: 12px 15px;
+  transition: all 0.3s ease;
+}
+
+.payment-page .form-control:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.payment-page .input-group-text {
+  border-radius: 10px 0 0 10px;
+  border: 2px solid #e9ecef;
+  border-right: none;
+  background-color: #fff;
+  color: var(--bs-primary);
+}
+
+.payment-page .input-group .form-control {
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+}
+
+.payment-page .input-group:focus-within .input-group-text {
+  border-color: var(--bs-primary);
+}
+
+.payment-page .alert-info {
+  background-color: #e7f3ff;
+  border: 2px solid #b3d9ff;
+  border-radius: 10px;
+}
+
+.payment-page .btn-primary {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.payment-page .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.payment-page .btn-primary:disabled {
+  transform: none;
+  opacity: 0.7;
+}
+
+/* Card number formatting */
+.payment-page input[name="cardNumber"] {
+  letter-spacing: 2px;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* Name on card uppercase */
+.payment-page input[name="nameOnCard"] {
+  font-weight: 600;
+}
+
+/* Security badge */
+.payment-page small .fa-shield-alt {
+  color: #28a745;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .payment-page .card-body {
+    padding: 2rem !important;
+  }
+
+  .payment-icons i {
+    font-size: 2rem !important;
+    margin: 0 0.5rem !important;
+  }
+}

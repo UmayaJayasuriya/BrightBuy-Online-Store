@@ -1,0 +1,145 @@
+/* Navbar Styles */
+.nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: var(--navbar-bg) !important;
+}
+
+.nav-bar.sticky-top {
+  box-shadow: 0 0.125rem 0.25rem var(--shadow-color);
+}
+
+.categories-bars {
+  margin: 0;
+  padding: 0;
+  background: var(--navbar-bg);
+}
+
+.categories-bars li {
+  list-style: none;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.categories-bars-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.categories-bars-item a {
+  color: var(--navbar-text) !important;
+  text-decoration: none;
+  transition: 0.3s;
+  font-weight: 700;
+}
+
+.categories-bars-item a:hover {
+  /* Keep the hovered link readable against the sidebar background.
+     Use a light color (papaya-whip) instead of the red accent which
+     clashes with the red dropdown background. */
+  color: var(--navbar-text) !important;
+  text-shadow: none;
+}
+
+/* Add a subtle background on list item hover to indicate focus */
+.categories-bars li:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.categories-bars-item span {
+  color: var(--air-superiority-blue) !important;
+  font-size: 0.875rem;
+}
+
+.nav-link {
+  color: var(--navbar-text) !important;
+  transition: all 0.3s ease;
+  font-weight: 700;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--fire-brick) !important;
+  text-shadow: 0 0 8px rgba(193, 18, 31, 0.5);
+}
+
+.navbar-toggler {
+  border-color: rgba(255,255,255,0.22);
+}
+
+.navbar-toggler .fa-bars {
+  color: var(--navbar-text);
+}
+
+.dropdown-menu {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.dropdown-item {
+  color: var(--color-text) !important;
+  transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background: var(--gradient-primary) !important;
+  color: var(--papaya-whip) !important;
+}
+
+/* Call Button Enhancement */
+.btn-secondary {
+  background: var(--gradient-secondary) !important;
+  border: none !important;
+  color: var(--papaya-whip) !important;
+}
+
+.btn-secondary:hover {
+  background: var(--air-superiority-blue) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* Categories Sidebar Enhancement */
+.navbar-light .navbar-toggler {
+  color: var(--papaya-whip) !important;
+  border-color: var(--papaya-whip) !important;
+}
+
+.navbar h4 {
+  color: var(--papaya-whip) !important;
+  font-weight: 700;
+}
+
+/* Remove the blue background behind the "All Categories" label in the left sidebar */
+.col-lg-3 .navbar-toggler {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.col-lg-3 .navbar h4 {
+  background: transparent !important;
+  display: inline-block;
+  margin: 0;
+  padding: 0.35rem 0.5rem; /* small padding so text isn't flush */
+}
+
+/* Constrain the categories collapse so it doesn't stretch across the whole row */
+.categories-collapse {
+  position: absolute;
+  top: 100%; /* place directly below the toggler */
+  left: 0;
+  width: 250px; /* match the sidebar width */
+  z-index: 1100; /* above main content */
+  background: var(--navbar-bg); /* match sidebar */
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.categories-collapse .navbar-nav {
+  max-height: 60vh;
+  overflow-y: auto;
+}

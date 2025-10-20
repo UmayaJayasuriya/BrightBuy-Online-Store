@@ -1,0 +1,56 @@
+/* Mermaid Garnet Symphony - Global color palette as CSS variables
+   Palette chosen to provide a balanced, elegant theme:
+   - Mermaid tones for calm backgrounds and accents
+   - Garnet tones for primary actions and highlights
+   - Symphonic neutrals for text, borders, and surfaces
+*/
+
+:root {
+  /* Mermaid family (cool, teal/green-blue) */
+  --mermaid-deep: #0e6f66;    /* deep teal */
+  --mermaid-mid: #28a199;     /* mid mermaid */
+  --mermaid-light: #9fe6dd;   /* pale/soft */
+
+  /* Garnet family (warm, rich red/purple) */
+  --garnet-deep: #7b1f2e;     /* deep garnet */
+  --garnet-mid: #b02a3b;      /* mid garnet (call-to-action) */
+  --garnet-light: #f3d7da;    /* soft warm highlight */
+
+  /* Symphony neutrals */
+  --symphony-ink: #1b2330;    /* primary text */
+  --symphony-muted: #5b6570;  /* secondary text */
+  --symphony-bg: #f7faf9;     /* page background */
+  --symphony-surface: #ffffff;/* cards, surfaces */
+  --symphony-border: rgba(27,35,48,0.08);
+
+  /* Amethyst Wisteria Twilight palette (user request) */
+  --color-primary: #4B2A57; /* deep amethyst */
+  --color-accent: #7C5DAF;  /* wisteria */
+  --color-accent-contrast: #C7A9E0; /* light wisteria */
+  --color-primary-contrast: #EDE6F6; /* pale lavender for contrast */
+  --color-danger: var(--garnet-deep);
+  --color-success: var(--mermaid-mid);
+  --color-background: var(--symphony-bg);
+  --color-surface: var(--symphony-surface);
+  --color-text: var(--symphony-ink);
+  --color-muted: var(--symphony-muted);
+
+  /* RGB helpers for shadows and bootstrap-like overrides */
+  --color-primary-rgb: 75, 42, 87; /* #4B2A57 */
+  --color-accent-rgb: 124, 93, 175; /* #7C5DAF */
+  --color-text-rgb: 27, 35, 48;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  --gradient-accent: linear-gradient(135deg, var(--color-accent), var(--color-primary-contrast));
+
+  /* Utility colors */
+  --shadow-color: rgba(11, 20, 25, 0.08);
+  --elevated-border: rgba(11,20,25,0.06);
+}
+
+/* small helper utilities */
+.mgsy-bg-primary { background: var(--color-primary) !important; color: var(--color-primary-contrast) !important; }
+.mgsy-bg-accent  { background: var(--color-accent) !important; color: var(--color-accent-contrast) !important; }
+.mgsy-text-primary { color: var(--color-text) !important; }
+.mgsy-text-muted { color: var(--color-muted) !important; }

@@ -1,0 +1,123 @@
+/**
+ * Profile Page Styles
+ */
+
+.profile-page {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.profile-page .page-header {
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #744B93 100%);
+  background-size: cover;
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--bs-primary);
+}
+
+.profile-info .info-item {
+  padding: 10px 0;
+}
+
+.profile-info .info-item label {
+  display: block;
+  font-size: 0.875rem;
+  margin-bottom: 5px;
+}
+
+.profile-page .card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 15px;
+}
+
+.profile-page .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+.order-card {
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+  border-radius: 10px !important;
+}
+
+.order-card:hover {
+  background: #e9ecef;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.order-info label {
+  display: block;
+  font-size: 0.75rem;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.orders-list {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.orders-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.orders-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.orders-list::-webkit-scrollbar-thumb {
+  background: var(--bs-primary);
+  border-radius: 10px;
+}
+
+.orders-list::-webkit-scrollbar-thumb:hover {
+  background: #81c408;
+}
+
+.profile-page .btn {
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.profile-page .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.badge {
+  font-weight: 500;
+  padding: 5px 15px;
+  font-size: 0.875rem;
+}
+
+/* Ensure account-type badge is always readable against themed backgrounds */
+.profile-info .info-item .badge,
+.profile-info .info-item .badge.bg-primary {
+  color: #ffffff !important; /* high contrast text */
+  background: var(--bs-primary) !important; /* ensure primary background */
+  background-color: var(--bs-primary) !important;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-page .order-card .row > div {
+    margin-bottom: 10px;
+  }
+  
+  .orders-list {
+    max-height: 400px;
+  }
+}
