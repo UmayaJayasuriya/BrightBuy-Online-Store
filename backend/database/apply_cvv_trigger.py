@@ -36,9 +36,9 @@ def apply_trigger():
         cursor.execute(trigger_create)
         conn.commit()
 
-        print("✅ CVV validation trigger created successfully!")
+        print(" CVV validation trigger created successfully!")
     except Exception as e:
-        print(f"❌ Error applying CVV trigger: {e}")
+        print(f" Error applying CVV trigger: {e}")
         if conn:
             conn.rollback()
         raise

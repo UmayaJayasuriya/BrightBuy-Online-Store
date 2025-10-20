@@ -102,17 +102,86 @@ def delete_product(
 ):
     cursor = db.cursor(dictionary=True)
     try:
-        cursor.execute("DELETE FROM product WHERE product_id = %s", (product_id,))
-        if cursor.rowcount == 0:
+        # Check if product exists
+        print(f"DEBUG: Checking if product {product_id} exists...")
+        cursor.execute("SELECT product_id FROM product WHERE product_id = %s", (product_id,))
+        product = cursor.fetchone()
+        
+        if not product:
             raise HTTPException(status_code=404, detail="Product not found")
+        
+        print(f"DEBUG: Product {product_id} found, checking orders...")
+        
+        # Check if product variants exist in orders
+        cursor.execute(
+            """SELECT COUNT(*) as count 
+               FROM order_item oi 
+               JOIN variant v ON oi.variant_id = v.variant_id 
+               WHERE v.product_id = %s""",
+            (product_id,)
+        )
+        result = cursor.fetchone()
+        
+        if result and result['count'] > 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot delete product: it has {result['count']} order(s). Please archive instead of delete."
+            )
+        
+        print(f"DEBUG: No orders found, deleting variants...")
+        
+        # Delete variants first (due to foreign key constraint)
+        cursor.execute("DELETE FROM variant WHERE product_id = %s", (product_id,))
+        variants_deleted = cursor.rowcount
+        print(f"DEBUG: Deleted {variants_deleted} variants")
+        
+        # Delete favorites related to this product (if table exists)
+        print(f"DEBUG: Attempting to delete favorites...")
+        try:
+            cursor.execute("DELETE FROM favorite_product WHERE product_id = %s", (product_id,))
+            print(f"DEBUG: Deleted favorites successfully")
+        except mysql.connector.Error as e:
+            # Ignore if table doesn't exist (error 1146)
+            print(f"DEBUG: Favorite deletion error: {e.errno} - {e.msg}")
+            if e.errno != 1146:
+                raise
+        
+        print(f"DEBUG: Deleting product...")
+        # Delete the product
+        cursor.execute("DELETE FROM product WHERE product_id = %s", (product_id,))
+        
+        print(f"DEBUG: Committing transaction...")
         db.commit()
-        return {"deleted": True, "product_id": product_id}
+        print(f"DEBUG: Commit successful!")
+        
+        return {
+            "deleted": True, 
+            "product_id": product_id,
+            "variants_deleted": variants_deleted,
+            "message": "Product and associated data deleted successfully"
+        }
     except HTTPException:
+        print(f"DEBUG: HTTPException occurred, rolling back...")
         db.rollback()
         raise
-    except Exception as e:
+    except mysql.connector.Error as e:
+        print(f"DEBUG: MySQL Error: {e.errno} - {e.msg}")
+        import traceback
+        traceback.print_exc()
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        # Handle foreign key constraint errors
+        if e.errno == 1451:
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot delete product: it is referenced in other tables (orders, cart, etc.)"
+            )
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except Exception as e:
+        print(f"DEBUG: General Exception: {type(e).__name__} - {str(e)}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
     finally:
         cursor.close()
 
