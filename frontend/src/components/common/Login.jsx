@@ -34,6 +34,12 @@ const Login = ({ isOpen, onClose, onLoginSuccess, onSwitchToSignUp }) => {
       });
 
       if (response.data) {
+        // Store token in localStorage
+        if (response.data.access_token) {
+          localStorage.setItem('token', response.data.access_token);
+          console.log('Token saved to localStorage');
+        }
+        
         // Store user data in localStorage
         localStorage.setItem('user', JSON.stringify(response.data));
         onLoginSuccess(response.data);

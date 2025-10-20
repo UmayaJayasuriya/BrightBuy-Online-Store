@@ -134,6 +134,16 @@ const Single = () => {
     setDeletingVariant(true);
     try {
       const token = localStorage.getItem('token');
+      
+      // Check if token exists
+      if (!token) {
+        alert('You are not logged in. Please log in as an admin to delete variants.');
+        navigate('/');
+        return;
+      }
+
+      console.log('Deleting variant with token:', token.substring(0, 20) + '...');
+      
       await axios.delete(
         `http://127.0.0.1:8020/admin/variants/${selectedVariant.variant_id}`,
         {
@@ -149,13 +159,12 @@ const Single = () => {
       const response = await axios.get(`http://127.0.0.1:8020/products/${id}/variants/`);
       setProductData(response.data);
       
-      // Select first remaining variant or null if no variants left
+      // Select first remaining variant or reload to show "No variants available"
       if (response.data.variants && response.data.variants.length > 0) {
         setSelectedVariant(response.data.variants[0]);
       } else {
         setSelectedVariant(null);
-        alert('All variants have been deleted. Redirecting to shop...');
-        setTimeout(() => navigate('/shop'), 2000);
+        // Page will now show "No variants available" message with Go Back button
       }
       
     } catch (err) {
@@ -184,6 +193,74 @@ const Single = () => {
         <Link to="/shop" className="btn btn-primary mt-3">
           Back to Shop
         </Link>
+      </div>
+    );
+  }
+
+  // Check if product has no variants
+  if (!productData.variants || productData.variants.length === 0) {
+    return (
+      <div className="single-page">
+        {/* Page Header */}
+        <div className="container-fluid page-header py-5" style={{
+          backgroundImage: 'url(/img/topbar.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          position: 'relative',
+          minHeight: '260px'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.45)',
+            zIndex: 1
+          }}></div>
+          <div className="container text-center py-5" style={{ position: 'relative', zIndex: 2 }}>
+            <h1 className="display-4 text-white mb-3 fw-bolder">{productData.product_name}</h1>
+            <nav aria-label="breadcrumb">
+              <ol className="breadcrumb justify-content-center mb-0">
+                <li className="breadcrumb-item"><Link to="/" className="text-white">Home</Link></li>
+                <li className="breadcrumb-item"><Link to="/shop" className="text-white">Shop</Link></li>
+                <li className="breadcrumb-item active text-white">{productData.product_name}</li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+
+        {/* No Variants Available Message */}
+        <div className="container py-5">
+          <div className="row justify-content-center">
+            <div className="col-lg-8 text-center">
+              <div className="card shadow-sm p-5">
+                <div className="mb-4">
+                  <i className="fas fa-box-open fa-5x text-muted mb-3"></i>
+                </div>
+                <h2 className="mb-3">No Variants Available</h2>
+                <p className="text-muted mb-4">
+                  Unfortunately, there are currently no available variants for this product. 
+                  {isAdmin && " As an admin, you can add new variants to make this product available for purchase."}
+                </p>
+                <div className="d-flex gap-3 justify-content-center">
+                  <button 
+                    onClick={() => navigate(-1)} 
+                    className="btn btn-secondary px-4"
+                  >
+                    <i className="fas fa-arrow-left me-2"></i>
+                    Go Back
+                  </button>
+                  <Link to="/shop" className="btn btn-primary px-4">
+                    <i className="fas fa-shopping-bag me-2"></i>
+                    Continue Shopping
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

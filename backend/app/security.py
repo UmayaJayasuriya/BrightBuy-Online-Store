@@ -24,7 +24,7 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
     return encoded_jwt
 
 
-bearer_scheme = HTTPBearer(auto_error=True)
+bearer_scheme = HTTPBearer(auto_error=False)  # Changed to False to get better error messages
 
 
 def decode_token(token: str) -> Dict[str, Any]:
@@ -39,11 +39,21 @@ def decode_token(token: str) -> Dict[str, Any]:
 
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)) -> Dict[str, Any]:
+    if not credentials:
+        print("DEBUG: No credentials provided!")
+        raise HTTPException(
+            status_code=401, 
+            detail="Authorization header missing. Please provide a Bearer token."
+        )
+    print(f"DEBUG: Received credentials: {credentials}")
     token = credentials.credentials
+    print(f"DEBUG: Token (first 20 chars): {token[:20]}...")
     payload = decode_token(token)
+    print(f"DEBUG: Decoded payload: {payload}")
     # Expected fields: sub (user_id), user_name, email, user_type
     if not payload.get("sub"):
         raise HTTPException(status_code=401, detail="Invalid token: missing subject")
+    print(f"DEBUG: User type: {payload.get('user_type')}")
     return payload
 
 
