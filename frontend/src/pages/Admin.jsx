@@ -54,6 +54,19 @@ const Admin = () => {
     quantity: ''
   });
 
+  // For adding variant to existing product
+  const [addVariantToProduct, setAddVariantToProduct] = useState({
+    product_id: '',
+    variant_name: '',
+    price: '',
+    quantity: '',
+    SKU: ''
+  });
+
+  // Track expanded products for variant display
+  const [expandedProducts, setExpandedProducts] = useState({});
+  const [productVariants, setProductVariants] = useState({});
+
   useEffect(() => {
     if (!isAdmin) navigate('/');
   }, [isAdmin, navigate]);
@@ -189,6 +202,64 @@ const Admin = () => {
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to delete product');
     } finally { setLoading(false); }
+  };
+
+  const handleAddVariantToExistingProduct = async (e) => {
+    e.preventDefault(); setLoading(true); setError(''); setSuccessMessage('');
+    try {
+      const config = axiosConfig();
+      if (!config.headers.Authorization) { setError('Not authenticated. Please log in as admin.'); return; }
+      
+      const payload = {
+        variant_name: addVariantToProduct.variant_name,
+        price: parseFloat(addVariantToProduct.price),
+        quantity: parseInt(addVariantToProduct.quantity),
+        SKU: addVariantToProduct.SKU || null
+      };
+      
+      const res = await axios.post(
+        `http://127.0.0.1:8020/admin/products/${addVariantToProduct.product_id}/variants`,
+        payload,
+        config
+      );
+      
+      setSuccessMessage(`Variant "${res.data.variant_name}" added successfully to product!`);
+      setAddVariantToProduct({ product_id: '', variant_name: '', price: '', quantity: '', SKU: '' });
+      
+      // Refresh variants for this product if it's expanded
+      if (expandedProducts[addVariantToProduct.product_id]) {
+        fetchProductVariants(addVariantToProduct.product_id);
+      }
+      
+      fetchVariants(); // Refresh all variants
+    } catch (err) {
+      if (err.response?.data?.detail) {
+        if (Array.isArray(err.response.data.detail)) {
+          const errorMessages = err.response.data.detail.map(e => `${e.loc.join('.')}: ${e.msg}`).join(', ');
+          setError(errorMessages);
+        } else {
+          setError(err.response.data.detail);
+        }
+      } else {
+        setError('Failed to add variant to product');
+      }
+    } finally { setLoading(false); }
+  };
+
+  const toggleProductVariants = async (productId) => {
+    setExpandedProducts(prev => ({ ...prev, [productId]: !prev[productId] }));
+    if (!expandedProducts[productId] && !productVariants[productId]) {
+      await fetchProductVariants(productId);
+    }
+  };
+
+  const fetchProductVariants = async (productId) => {
+    try {
+      const res = await axios.get(`http://127.0.0.1:8020/products/${productId}/variants/`);
+      setProductVariants(prev => ({ ...prev, [productId]: res.data.variants || [] }));
+    } catch (err) {
+      setProductVariants(prev => ({ ...prev, [productId]: [] }));
+    }
   };
 
   const handleUpdateVariantQuantity = async (e) => {
@@ -387,6 +458,71 @@ const Admin = () => {
   const renderProducts = () => (
     <div className="products-section">
       <h2>Products</h2>
+      
+      {/* Add Variant to Existing Product Section */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <h5 className="card-title">Add Variant to Existing Product</h5>
+          <form onSubmit={handleAddVariantToExistingProduct}>
+            <div className="row">
+              <div className="col-md-2">
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Product ID"
+                  value={addVariantToProduct.product_id}
+                  onChange={(e) => setAddVariantToProduct({ ...addVariantToProduct, product_id: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-3">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Variant Name"
+                  value={addVariantToProduct.variant_name}
+                  onChange={(e) => setAddVariantToProduct({ ...addVariantToProduct, variant_name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-2">
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-control"
+                  placeholder="Price"
+                  value={addVariantToProduct.price}
+                  onChange={(e) => setAddVariantToProduct({ ...addVariantToProduct, price: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-2">
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Quantity"
+                  value={addVariantToProduct.quantity}
+                  onChange={(e) => setAddVariantToProduct({ ...addVariantToProduct, quantity: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="col-md-2">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="SKU (optional)"
+                  value={addVariantToProduct.SKU}
+                  onChange={(e) => setAddVariantToProduct({ ...addVariantToProduct, SKU: e.target.value })}
+                />
+              </div>
+              <div className="col-md-1">
+                <button type="submit" className="btn btn-success w-100" disabled={loading}>Add</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <div className="card mb-4">
         <div className="card-body">
           <h5 className="card-title">Add New Product</h5>
@@ -538,14 +674,82 @@ const Admin = () => {
           </thead>
           <tbody>
             {products.filter(p => p.category_id === selectedCategory).map(p => (
-              <tr key={p.product_id}>
-                <td>{p.product_id}</td>
-                <td>{p.product_name}</td>
-                <td>{p.description || 'N/A'}</td>
-                <td>
-                  <button className="btn btn-sm btn-danger" onClick={() => handleDeleteProduct(p.product_id, p.product_name)} disabled={loading}>Delete</button>
-                </td>
-              </tr>
+              <React.Fragment key={p.product_id}>
+                <tr>
+                  <td>{p.product_id}</td>
+                  <td>{p.product_name}</td>
+                  <td>{p.description || 'N/A'}</td>
+                  <td>
+                    <button 
+                      className="btn btn-sm btn-info me-2" 
+                      onClick={() => toggleProductVariants(p.product_id)}
+                    >
+                      {expandedProducts[p.product_id] ? '▼ Hide Variants' : '▶ View Variants'}
+                    </button>
+                    <button 
+                      className="btn btn-sm btn-danger" 
+                      onClick={() => handleDeleteProduct(p.product_id, p.product_name)} 
+                      disabled={loading}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+                {expandedProducts[p.product_id] && productVariants[p.product_id] && (
+                  <tr>
+                    <td colSpan="4" style={{ backgroundColor: '#f8f9fa', padding: '15px' }}>
+                      <h6>Variants for {p.product_name}:</h6>
+                      {productVariants[p.product_id].length > 0 ? (
+                        <table className="table table-sm table-bordered mb-0">
+                          <thead>
+                            <tr>
+                              <th>Variant ID</th>
+                              <th>Variant Name</th>
+                              <th>Price</th>
+                              <th>Quantity</th>
+                              <th>SKU</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {productVariants[p.product_id].map(variant => (
+                              <tr key={variant.variant_id}>
+                                <td>{variant.variant_id}</td>
+                                <td>{variant.variant_name}</td>
+                                <td>${parseFloat(variant.price).toFixed(2)}</td>
+                                <td>{variant.quantity}</td>
+                                <td>{variant.SKU || 'N/A'}</td>
+                                <td>
+                                  <button
+                                    className="btn btn-sm btn-danger"
+                                    onClick={async () => {
+                                      if (!window.confirm(`Are you sure you want to delete variant '${variant.variant_name}'?`)) return;
+                                      setLoading(true); setError(''); setSuccessMessage('');
+                                      try {
+                                        const config = axiosConfig();
+                                        if (!config.headers.Authorization) { setError('Not authenticated. Please log in as admin.'); setLoading(false); return; }
+                                        await axios.delete(`http://127.0.0.1:8020/admin/variants/${variant.variant_id}`, config);
+                                        setSuccessMessage(`Variant '${variant.variant_name}' deleted successfully!`);
+                                        fetchProductVariants(p.product_id);
+                                        fetchVariants();
+                                      } catch (err) {
+                                        setError(err.response?.data?.detail || 'Failed to delete variant');
+                                      } finally { setLoading(false); }
+                                    }}
+                                    disabled={loading}
+                                  >Delete</button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <p className="text-muted">No variants found for this product.</p>
+                      )}
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
