@@ -14,7 +14,7 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY environment variable is required but not set in .env file")
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
+ACCESS_TOKEN_EXPIRE_MINUTES = 60* 1  # 1 hour
 
 
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:

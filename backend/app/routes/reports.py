@@ -226,7 +226,7 @@ def generate_top_selling_products_report(
             cursor.execute(query, (start_date, end_date, limit))
             period_text = f"Period: {start_date} to {end_date}"
         else:
-            cursor.execute(f"SELECT * FROM top_selling_products LIMIT {limit}")
+            cursor.execute("SELECT * FROM top_selling_products LIMIT %s", (limit,))
             period_text = "All Time"
         
         data = cursor.fetchall()
