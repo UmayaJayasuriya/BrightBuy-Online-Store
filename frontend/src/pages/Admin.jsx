@@ -1043,6 +1043,28 @@ const Admin = () => {
             </div>
           </div>
         </div>
+
+        {/* Delivery Time Estimates */}
+        <div className="col-md-12">
+          <div className="card">
+            <div className="card-body">
+              <h5 className="card-title">
+                <i className="bi bi-truck"></i> Delivery Time Estimates
+              </h5>
+              <p className="card-text">View upcoming orders with estimated delivery times based on delivery method and location.</p>
+              <button
+                className="btn btn-primary w-100"
+                onClick={() => downloadReport(
+                  `/reports/delivery-time-estimates`,
+                  `delivery_time_estimates.pdf`
+                )}
+                disabled={loading}
+              >
+                <i className="bi bi-download"></i> Download Report
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

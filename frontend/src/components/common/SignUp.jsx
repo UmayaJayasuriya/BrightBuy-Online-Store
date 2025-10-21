@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './SignUp.css';
 
@@ -12,12 +12,28 @@ const SignUp = ({ isOpen, onClose, onSignUpSuccess, onSwitchToLogin }) => {
       house_number: '',
       street: '',
       city: '',
-      state: ''
+      state: 'Texas'
     }
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [cities, setCities] = useState([]);
+
+  // Fetch cities when component opens
+  useEffect(() => {
+    const fetchCities = async () => {
+      if (isOpen) {
+        try {
+          const response = await axios.get('http://127.0.0.1:8020/locations/cities');
+          setCities(response.data);
+        } catch (err) {
+          console.error('Error fetching cities:', err);
+        }
+      }
+    };
+    fetchCities();
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -49,7 +65,7 @@ const SignUp = ({ isOpen, onClose, onSignUpSuccess, onSwitchToLogin }) => {
           house_number: parseInt(form.address.house_number, 10),
           street: form.address.street,
           city: form.address.city,
-          state: form.address.state
+          state: 'Texas'
         }
       };
 
@@ -124,11 +140,14 @@ const SignUp = ({ isOpen, onClose, onSignUpSuccess, onSwitchToLogin }) => {
             <div className="form-row">
               <div className="form-group">
                 <label>City</label>
-                <input name="address.city" value={form.address.city} onChange={handleChange} required />
-              </div>
-              <div className="form-group">
-                <label>State</label>
-                <input name="address.state" value={form.address.state} onChange={handleChange} required />
+                <select name="address.city" value={form.address.city} onChange={handleChange} required>
+                  <option value="">Select City</option>
+                  {cities.map((city) => (
+                    <option key={city.city_id} value={city.city}>
+                      {city.city} {city.Is_main_city ? '(Main City)' : ''}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </fieldset>

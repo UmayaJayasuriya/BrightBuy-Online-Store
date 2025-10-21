@@ -27,7 +27,7 @@ const Checkout = () => {
     houseNumber: '',
     street: '',
     city: '',
-    state: '',
+    state: 'Texas',
     paymentMethod: 'card',
     deliveryMethod: 'home_delivery',
     addressId: user?.address_id || null
@@ -326,18 +326,6 @@ const Checkout = () => {
                             </option>
                           ))}
                         </select>
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">State *</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="state"
-                          value={formData.state}
-                          onChange={handleInputChange}
-                          placeholder="e.g., California"
-                          required={formData.deliveryMethod === 'home_delivery'}
-                        />
                       </div>
                     </>
                   )}

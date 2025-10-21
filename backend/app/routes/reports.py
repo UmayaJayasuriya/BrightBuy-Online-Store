@@ -696,3 +696,186 @@ def generate_all_customers_summary_report(
         if cursor:
             cursor.close()
         raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
+
+
+@router.get("/delivery-time-estimates")
+def generate_delivery_time_estimates_report(
+    db: mysql.connector.MySQLConnection = Depends(get_db),
+    admin = Depends(get_admin_user)
+):
+    """
+    Generate PDF report for delivery time estimates for upcoming orders
+    Shows orders that are not yet delivered with estimated delivery times
+    """
+    cursor = None
+    try:
+        cursor = db.cursor(dictionary=True)
+        
+        # Get upcoming orders (not delivered yet) with delivery estimates
+        cursor.execute("""
+            SELECT 
+                o.order_id,
+                o.order_date,
+                o.total_amount,
+                u.user_name,
+                u.email,
+                u.name as full_name,
+                d.delivery_method,
+                d.delivery_status,
+                d.estimated_delivery_date,
+                a.city,
+                a.state,
+                l.Is_main_city,
+                CASE 
+                    WHEN d.delivery_method = 'store_pickup' THEN 2
+                    WHEN l.Is_main_city = 1 THEN 5
+                    ELSE 7
+                END as base_delivery_days,
+                DATEDIFF(d.estimated_delivery_date, o.order_date) as estimated_days,
+                COUNT(oi.order_item_id) as total_items
+            FROM orders o
+            JOIN user u ON o.user_id = u.user_id
+            LEFT JOIN delivery d ON o.order_id = d.order_id
+            LEFT JOIN address a ON d.address_id = a.address_id
+            LEFT JOIN location l ON a.city = l.city
+            LEFT JOIN order_item oi ON o.order_id = oi.order_id
+            WHERE d.delivery_status IN ('pending', 'processing', 'shipped')
+               OR d.delivery_status IS NULL
+            GROUP BY o.order_id, o.order_date, o.total_amount, u.user_name, u.email, 
+                     u.name, d.delivery_method, d.delivery_status, d.estimated_delivery_date,
+                     a.city, a.state, l.Is_main_city
+            ORDER BY o.order_date DESC
+            LIMIT 100
+        """)
+        
+        data = cursor.fetchall()
+        cursor.close()
+        
+        if not data:
+            raise HTTPException(status_code=404, detail="No upcoming orders found")
+        
+        # Create PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+        elements = []
+        
+        # Header
+        elements = create_header(
+            elements,
+            "Delivery Time Estimates Report",
+            f"Upcoming orders with estimated delivery times ({len(data)} orders)"
+        )
+        
+        # Summary statistics
+        home_delivery_count = sum(1 for row in data if row['delivery_method'] == 'home_delivery')
+        store_pickup_count = sum(1 for row in data if row['delivery_method'] == 'store_pickup')
+        total_value = sum(row['total_amount'] for row in data)
+        
+        summary_style = getSampleStyleSheet()['Normal']
+        summary_style.fontSize = 11
+        summary_style.spaceAfter = 15
+        
+        summary_text = f"""
+        <b>Summary:</b><br/>
+        Total Upcoming Orders: <b>{len(data)}</b> | 
+        Home Delivery: <b>{home_delivery_count}</b> | 
+        Store Pickup: <b>{store_pickup_count}</b> | 
+        Total Value: <b>${total_value:,.2f}</b>
+        """
+        elements.append(Paragraph(summary_text, summary_style))
+        elements.append(Spacer(1, 0.3*inch))
+        
+        # Table data
+        table_data = [
+            ['Order ID', 'Customer', 'Order Date', 'Amount', 'Method', 'City', 'Est. Days', 'Status']
+        ]
+        
+        for row in data:
+            order_date = row['order_date'].strftime('%Y-%m-%d') if row['order_date'] else 'N/A'
+            delivery_method = (row['delivery_method'] or 'N/A').replace('_', ' ').title()
+            city = (row['city'] or 'N/A')[:15]
+            est_days = row['estimated_days'] if row['estimated_days'] else row['base_delivery_days']
+            status = (row['delivery_status'] or 'Pending').upper()[:8]
+            
+            table_data.append([
+                str(row['order_id']),
+                (row['user_name'] or 'N/A')[:12],
+                order_date,
+                f"${row['total_amount']:,.2f}",
+                delivery_method[:12],
+                city,
+                f"{est_days} days",
+                status
+            ])
+        
+        # Create table
+        table = Table(table_data, colWidths=[0.7*inch, 1*inch, 0.9*inch, 0.9*inch, 1.1*inch, 1*inch, 0.8*inch, 0.8*inch])
+        table.setStyle(TableStyle([
+            # Header
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#16A085')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+            ('TOPPADDING', (0, 0), (-1, 0), 10),
+            
+            # Data
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#D5F4E6')]),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 1), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+        ]))
+        
+        elements.append(table)
+        elements.append(Spacer(1, 0.3*inch))
+        
+        # Add legend
+        legend_style = ParagraphStyle(
+            'Legend',
+            parent=getSampleStyleSheet()['Normal'],
+            fontSize=9,
+            textColor=colors.HexColor('#555555'),
+            spaceAfter=10
+        )
+        legend_text = """
+        <b>Delivery Time Guidelines:</b><br/>
+        • Store Pickup: 2 business days<br/>
+        • Home Delivery (Main Cities): 5 days<br/>
+        • Home Delivery (Other Cities): 7 days<br/>
+        • Additional 3 days may apply for low stock items
+        """
+        elements.append(Paragraph(legend_text, legend_style))
+        elements.append(Spacer(1, 0.2*inch))
+        
+        # Footer
+        footer_style = ParagraphStyle(
+            'Footer',
+            parent=getSampleStyleSheet()['Normal'],
+            fontSize=8,
+            textColor=colors.grey,
+            alignment=TA_CENTER
+        )
+        elements.append(Paragraph(create_footer_text(), footer_style))
+        
+        # Build PDF
+        doc.build(elements)
+        buffer.seek(0)
+        
+        return StreamingResponse(
+            buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": "attachment; filename=delivery_time_estimates.pdf"
+            }
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        if cursor:
+            cursor.close()
+        raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")

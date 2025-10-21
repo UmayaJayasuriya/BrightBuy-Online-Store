@@ -11,6 +11,16 @@ npm-debug.log
 yarn-debug.log
 yarn-error.log
 
+# Cache files
+.cache/
+*.cache
+.eslintcache
+frontend/node_modules/.cache/
+
+# Build artifacts
+*.pack
+*.pyc
+
 # Python
 __pycache__/
 *.py[cod]
