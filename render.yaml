@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: brightbuy-backend
+    env: python
+    region: ohio
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: DB_HOST
+        value: localhost
+      - key: DB_USER
+        value: root
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: brightbuy
+      - key: DB_PORT
+        value: "3306"
+
+  - type: web
+    name: brightbuy-frontend
+    env: node
+    region: ohio
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://brightbuy-backend.onrender.com
+
+  - type: mysql
+    name: brightbuy-mysql
+    region: ohio
+    plan: free
+    ipAllowList: []
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        sync: false
+      - key: MYSQL_DATABASE
+        value: brightbuy
