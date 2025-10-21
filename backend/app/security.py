@@ -5,9 +5,13 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-key-for-dev-only")
 # In a real app, load from environment
-SECRET_KEY = "CHANGE_ME_SUPER_SECRET_KEY"
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 

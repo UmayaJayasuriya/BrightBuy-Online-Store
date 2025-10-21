@@ -13,18 +13,28 @@ DROP VIEW IF EXISTS quarterly_sales_report;
 
 CREATE VIEW quarterly_sales_report AS
 SELECT 
-    YEAR(o.order_date) AS year,
-    QUARTER(o.order_date) AS quarter,
-    CONCAT('Q', QUARTER(o.order_date), ' ', YEAR(o.order_date)) AS quarter_label,
-    COUNT(DISTINCT o.order_id) AS total_orders,
-    COUNT(DISTINCT o.user_id) AS unique_customers,
-    SUM(o.total_amount) AS total_revenue,
-    AVG(o.total_amount) AS average_order_value,
-    SUM(oi.quantity) AS total_items_sold
-FROM orders o
-LEFT JOIN order_item oi ON o.order_id = oi.order_id
-GROUP BY YEAR(o.order_date), QUARTER(o.order_date)
-ORDER BY YEAR(o.order_date) DESC, QUARTER(o.order_date) DESC;
+    y AS year,
+    q AS quarter,
+    CONCAT('Q', q, ' ', y) AS quarter_label,
+    total_orders,
+    unique_customers,
+    total_revenue,
+    average_order_value,
+    total_items_sold
+FROM (
+    SELECT 
+        YEAR(o.order_date) AS y,
+        QUARTER(o.order_date) AS q,
+        COUNT(DISTINCT o.order_id) AS total_orders,
+        COUNT(DISTINCT o.user_id) AS unique_customers,
+        SUM(o.total_amount) AS total_revenue,
+        AVG(o.total_amount) AS average_order_value,
+        COALESCE(SUM(oi.quantity), 0) AS total_items_sold
+    FROM orders o
+    LEFT JOIN order_item oi ON o.order_id = oi.order_id
+    GROUP BY YEAR(o.order_date), QUARTER(o.order_date)
+) AS subquery
+ORDER BY year DESC, quarter DESC;
 
 
 -- ============================================
@@ -78,7 +88,7 @@ JOIN orders o ON oi.order_id = o.order_id
 JOIN variant v ON oi.variant_id = v.variant_id
 JOIN product p ON v.product_id = p.product_id
 LEFT JOIN category c ON p.category_id = c.category_id
-GROUP BY c.category_id, c.category_name
+GROUP BY c.category_id, category_name
 ORDER BY total_revenue DESC;
 
 
@@ -131,7 +141,7 @@ SELECT
     u.email,
     u.name AS full_name,
     COUNT(DISTINCT o.order_id) AS total_orders,
-    SUM(o.total_amount) AS total_spent,
+    COALESCE(SUM(o.total_amount), 0) AS total_spent,
     AVG(o.total_amount) AS average_order_value,
     MIN(o.order_date) AS first_order_date,
     MAX(o.order_date) AS last_order_date,
@@ -143,7 +153,7 @@ FROM user u
 LEFT JOIN orders o ON u.user_id = o.user_id
 LEFT JOIN payment p ON o.order_id = p.order_id
 LEFT JOIN delivery d ON o.order_id = d.order_id
-GROUP BY u.user_id, u.user_name, u.email, u.name
+GROUP BY u.user_id, u.user_name, u.email, full_name
 HAVING total_orders > 0
 ORDER BY total_spent DESC;
 
