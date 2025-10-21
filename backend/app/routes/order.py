@@ -6,6 +6,7 @@ from app.database import get_connection
 from app.schemas.order import OrderOut, CreateOrderRequest, OrderItemOut
 from typing import List
 from datetime import datetime, timedelta
+from app.services.email_service import send_order_confirmation
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -198,10 +199,10 @@ def create_order_from_cart(request: CreateOrderRequest):
         
         # Reset cart total
         cursor.execute("UPDATE cart SET total_amount = 0 WHERE cart_id = %s", (cart['cart_id'],))
-        
+
         # Commit transaction
         conn.commit()
-        
+
         # Get order items with product details for response
         cursor.execute(
             """SELECT oi.order_item_id, oi.order_id, oi.variant_id, oi.quantity, oi.price,
@@ -227,6 +228,41 @@ def create_order_from_cart(request: CreateOrderRequest):
                 product_name=item['product_name'],
                 product_id=item['product_id']
             ))
+
+        # Attempt to send order confirmation email (best-effort)
+        try:
+            # Fetch user email and name
+            cursor.execute("SELECT user_name, email, name FROM user WHERE user_id = %s", (request.user_id,))
+            user_row = cursor.fetchone()
+            to_email = user_row['email'] if user_row and user_row.get('email') else None
+            user_name = user_row.get('name') or user_row.get('user_name') if user_row else "Customer"
+
+            if to_email:
+                # Prepare items payload for email
+                items_for_email = [
+                    {
+                        'product_name': it['product_name'],
+                        'variant_name': it['variant_name'],
+                        'quantity': it['quantity'],
+                        'price': float(it['price'])
+                    }
+                    for it in order_items
+                ]
+
+                send_order_confirmation(
+                    to_email=to_email,
+                    user_name=user_name,
+                    order_id=order_id,
+                    items=items_for_email,
+                    total_amount=total_amount,
+                    payment_method=request.payment_method,
+                    delivery_method=request.delivery_method,
+                    estimated_date=estimated_date.isoformat() if estimated_date else None,
+                    estimated_days=estimated_days if estimated_days else None,
+                )
+        except Exception:
+            # Do not fail the request on email issues
+            pass
         
         return OrderOut(
             order_id=order_id,
