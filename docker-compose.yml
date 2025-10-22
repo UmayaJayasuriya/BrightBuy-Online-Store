@@ -1,0 +1,64 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: brightbuy-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-Himandhi@123}
+      MYSQL_DATABASE: ${DB_NAME:-brightbuy}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/docker-entrypoint:/docker-entrypoint-initdb.d
+    networks:
+      - brightbuy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: brightbuy-backend
+    environment:
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-Himandhi@123}
+      DB_NAME: ${DB_NAME:-brightbuy}
+      DB_PORT: 3306
+      SECRET_KEY: ${SECRET_KEY:-Xk9mP3vNq2wR5tY8uI1oL4aS6dF7gH9jK0zX3cV5bN8m}
+    ports:
+      - "8020:8020"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - brightbuy-network
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: brightbuy-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://backend:8020
+    depends_on:
+      - backend
+    networks:
+      - brightbuy-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  brightbuy-network:
+    driver: bridge

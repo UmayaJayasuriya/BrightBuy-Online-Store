@@ -1,0 +1,20 @@
+cd backend; $env:PYTHONPATH="$pwd"; python -m uvicorn app.main:app --host 127.0.0.1 --port 8020 --reload
+
+
+cd frontend
+npm start
+
+
+Heroku - Cd.EGRTDi5zz:2e
+
+
+### Step 3: Start Docker Services
+```powershell
+docker compose up -d
+```
+
+**Wait 10 seconds for everything to start**, then check:
+
+```powershell
+docker compose ps
+```
