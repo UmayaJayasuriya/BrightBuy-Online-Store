@@ -15,16 +15,23 @@ def login_user(login_data: LoginRequest, db=Depends(get_db)):
     try:
         cursor = db.cursor(dictionary=True)
         
-        # Find user by email or username
+        # Find user by email or username (checking both username columns)
         cursor.execute(
-            "SELECT * FROM user WHERE email = %s OR user_name = %s",
+            """
+            SELECT * FROM user 
+            WHERE email = %s 
+            OR user_name = %s
+            """,
             (login_data.identifier, login_data.identifier)
         )
         user = cursor.fetchone()
         cursor.close()
 
         if not user:
-            raise HTTPException(status_code=401, detail="User not found")
+            raise HTTPException(
+                status_code=401, 
+                detail="User not found. Please check your email/username."
+            )
 
         # Verify password using bcrypt
         password_bytes = login_data.password.encode('utf-8')[:72]
