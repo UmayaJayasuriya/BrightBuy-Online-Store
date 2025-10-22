@@ -1,21 +1,63 @@
 -- ============================================
--- MedSync Complete Database Backup
--- Generated: 2025-10-22 15:42:41
--- ============================================
-
--- ============================================
--- MedSync Schema (DDL) Export
--- Generated: 2025-10-22 15:42:41
+-- BrightBuy Complete Database Initialization
+-- Cleaned for Docker deployment
 -- ============================================
 
 CREATE DATABASE IF NOT EXISTS `brightbuy`;
 USE `brightbuy`;
 
--- ============================================
--- Table: address
--- ============================================
-DROP TABLE IF EXISTS `address`;
+SET FOREIGN_KEY_CHECKS=0;
 
+-- ============================================
+-- PHASE 1: Core/Parent Tables (no dependencies)
+-- ============================================
+
+-- Table: location (no dependencies)
+DROP TABLE IF EXISTS `location`;
+CREATE TABLE `location` (
+  `city_id` int NOT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `zip_code` int DEFAULT NULL,
+  `Is_main_city` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`city_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Table: category (self-referencing)
+DROP TABLE IF EXISTS `category`;
+CREATE TABLE `category` (
+  `category_id` int NOT NULL AUTO_INCREMENT,
+  `category_name` varchar(100) DEFAULT NULL,
+  `parent_category_id` int DEFAULT NULL,
+  PRIMARY KEY (`category_id`),
+  KEY `parent_category_id` (`parent_category_id`),
+  CONSTRAINT `category_ibfk_1` FOREIGN KEY (`parent_category_id`) REFERENCES `category` (`category_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Table: contact (no dependencies)
+DROP TABLE IF EXISTS `contact`;
+CREATE TABLE `contact` (
+  `contact_id` int NOT NULL AUTO_INCREMENT,
+  `customer_name` varchar(50) DEFAULT NULL,
+  `email` varchar(50) DEFAULT NULL,
+  `subject_name` varchar(50) DEFAULT NULL,
+  `message` varchar(200) DEFAULT NULL,
+  PRIMARY KEY (`contact_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Table: variant_attribute (no dependencies)
+DROP TABLE IF EXISTS `variant_attribute`;
+CREATE TABLE `variant_attribute` (
+  `attribute_id` int NOT NULL,
+  `attribute_name` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`attribute_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ============================================
+-- PHASE 2: Tables with single-level dependencies
+-- ============================================
+
+-- Table: address (depends on: location)
+DROP TABLE IF EXISTS `address`;
 CREATE TABLE `address` (
   `address_id` int NOT NULL AUTO_INCREMENT,
   `city_id` int DEFAULT NULL,
@@ -28,230 +70,8 @@ CREATE TABLE `address` (
   CONSTRAINT `address_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `location` (`city_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ============================================
--- Table: admin_verification_codes
--- ============================================
-DROP TABLE IF EXISTS `admin_verification_codes`;
-
-CREATE TABLE `admin_verification_codes` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `verification_code` varchar(6) NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `expires_at` timestamp NOT NULL,
-  `is_used` tinyint(1) DEFAULT '0',
-  `attempts` int DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `idx_user_code` (`user_id`,`verification_code`),
-  KEY `idx_expires` (`expires_at`),
-  CONSTRAINT `admin_verification_codes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: card
--- ============================================
-DROP TABLE IF EXISTS `card`;
-
-CREATE TABLE `card` (
-  `card_id` int NOT NULL AUTO_INCREMENT,
-  `order_id` int DEFAULT NULL,
-  `card_number` varchar(50) DEFAULT NULL,
-  `card_name` varchar(50) DEFAULT NULL,
-  `expiry_date` varchar(50) DEFAULT NULL,
-  `CVV` varchar(10) DEFAULT NULL,
-  PRIMARY KEY (`card_id`),
-  KEY `order_id` (`order_id`),
-  CONSTRAINT `card_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: cart
--- ============================================
-DROP TABLE IF EXISTS `cart`;
-
-CREATE TABLE `cart` (
-  `cart_id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int DEFAULT NULL,
-  `created_date` datetime DEFAULT NULL,
-  `total_amount` decimal(10,2) DEFAULT NULL,
-  PRIMARY KEY (`cart_id`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `cart_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: cart_item
--- ============================================
-DROP TABLE IF EXISTS `cart_item`;
-
-CREATE TABLE `cart_item` (
-  `cart_item_id` int NOT NULL AUTO_INCREMENT,
-  `cart_id` int DEFAULT NULL,
-  `variant_id` int DEFAULT NULL,
-  `quantity` int DEFAULT NULL,
-  PRIMARY KEY (`cart_item_id`),
-  KEY `variant_id` (`variant_id`),
-  KEY `cart_item_ibfk_1` (`cart_id`),
-  CONSTRAINT `cart_item_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `cart` (`cart_id`) ON DELETE CASCADE,
-  CONSTRAINT `cart_item_ibfk_2` FOREIGN KEY (`variant_id`) REFERENCES `variant` (`variant_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: category
--- ============================================
-DROP TABLE IF EXISTS `category`;
-
-CREATE TABLE `category` (
-  `category_id` int NOT NULL AUTO_INCREMENT,
-  `category_name` varchar(100) DEFAULT NULL,
-  `parent_category_id` int DEFAULT NULL,
-  PRIMARY KEY (`category_id`),
-  KEY `parent_category_id` (`parent_category_id`),
-  CONSTRAINT `category_ibfk_1` FOREIGN KEY (`parent_category_id`) REFERENCES `category` (`category_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: category_order_summary
--- ============================================
-DROP TABLE IF EXISTS `category_order_summary`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `category_order_summary` AS select coalesce(`c`.`category_name`,'Uncategorized') AS `category_name`,`c`.`category_id` AS `category_id`,count(distinct `o`.`order_id`) AS `total_orders`,sum(`oi`.`quantity`) AS `total_items_sold`,sum((`oi`.`quantity` * `oi`.`price`)) AS `total_revenue`,avg((`oi`.`quantity` * `oi`.`price`)) AS `average_order_value`,count(distinct `p`.`product_id`) AS `unique_products`,min(`o`.`order_date`) AS `first_order_date`,max(`o`.`order_date`) AS `last_order_date` from ((((`order_item` `oi` join `orders` `o` on((`oi`.`order_id` = `o`.`order_id`))) join `variant` `v` on((`oi`.`variant_id` = `v`.`variant_id`))) join `product` `p` on((`v`.`product_id` = `p`.`product_id`))) left join `category` `c` on((`p`.`category_id` = `c`.`category_id`))) group by `c`.`category_id`,`c`.`category_name` order by `total_revenue` desc;
-
--- ============================================
--- Table: contact
--- ============================================
-DROP TABLE IF EXISTS `contact`;
-
-CREATE TABLE `contact` (
-  `contact_id` int NOT NULL AUTO_INCREMENT,
-  `customer_name` varchar(50) DEFAULT NULL,
-  `email` varchar(50) DEFAULT NULL,
-  `subject_name` varchar(50) DEFAULT NULL,
-  `message` varchar(200) DEFAULT NULL,
-  PRIMARY KEY (`contact_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: customer_order_payment_summary
--- ============================================
-DROP TABLE IF EXISTS `customer_order_payment_summary`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `customer_order_payment_summary` AS select `u`.`user_id` AS `user_id`,`u`.`user_name` AS `user_name`,`u`.`email` AS `email`,`u`.`name` AS `full_name`,`o`.`order_id` AS `order_id`,`o`.`order_date` AS `order_date`,`o`.`total_amount` AS `total_amount`,`p`.`payment_method` AS `payment_method`,`p`.`payment_status` AS `payment_status`,`p`.`payment_date` AS `payment_date`,`d`.`delivery_status` AS `delivery_status`,`d`.`delivery_method` AS `delivery_method`,`d`.`estimated_delivery_date` AS `estimated_delivery_date`,count(`oi`.`order_item_id`) AS `items_in_order`,sum(`oi`.`quantity`) AS `total_quantity` from ((((`user` `u` left join `orders` `o` on((`u`.`user_id` = `o`.`user_id`))) left join `payment` `p` on((`o`.`order_id` = `p`.`order_id`))) left join `delivery` `d` on((`o`.`order_id` = `d`.`order_id`))) left join `order_item` `oi` on((`o`.`order_id` = `oi`.`order_id`))) group by `u`.`user_id`,`u`.`user_name`,`u`.`email`,`u`.`name`,`o`.`order_id`,`o`.`order_date`,`o`.`total_amount`,`p`.`payment_method`,`p`.`payment_status`,`p`.`payment_date`,`d`.`delivery_status`,`d`.`delivery_method`,`d`.`estimated_delivery_date` order by `u`.`user_id`,`o`.`order_date` desc;
-
--- ============================================
--- Table: customer_summary_statistics
--- ============================================
-DROP TABLE IF EXISTS `customer_summary_statistics`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `customer_summary_statistics` AS select `u`.`user_id` AS `user_id`,`u`.`user_name` AS `user_name`,`u`.`email` AS `email`,`u`.`name` AS `full_name`,count(distinct `o`.`order_id`) AS `total_orders`,sum(`o`.`total_amount`) AS `total_spent`,avg(`o`.`total_amount`) AS `average_order_value`,min(`o`.`order_date`) AS `first_order_date`,max(`o`.`order_date`) AS `last_order_date`,sum((case when (`p`.`payment_status` = 'completed') then 1 else 0 end)) AS `completed_payments`,sum((case when (`p`.`payment_status` = 'pending') then 1 else 0 end)) AS `pending_payments`,sum((case when (`d`.`delivery_status` = 'delivered') then 1 else 0 end)) AS `delivered_orders`,sum((case when (`d`.`delivery_status` = 'pending') then 1 else 0 end)) AS `pending_deliveries` from (((`user` `u` left join `orders` `o` on((`u`.`user_id` = `o`.`user_id`))) left join `payment` `p` on((`o`.`order_id` = `p`.`order_id`))) left join `delivery` `d` on((`o`.`order_id` = `d`.`order_id`))) group by `u`.`user_id`,`u`.`user_name`,`u`.`email`,`u`.`name` having (`total_orders` > 0) order by `total_spent` desc;
-
--- ============================================
--- Table: delivery
--- ============================================
-DROP TABLE IF EXISTS `delivery`;
-
-CREATE TABLE `delivery` (
-  `delivery_id` int NOT NULL AUTO_INCREMENT,
-  `order_id` int DEFAULT NULL,
-  `delivery_method` varchar(50) DEFAULT NULL,
-  `address_id` int DEFAULT NULL,
-  `estimated_delivery_date` date DEFAULT NULL,
-  `delivery_status` varchar(20) DEFAULT NULL,
-  PRIMARY KEY (`delivery_id`),
-  KEY `order_id` (`order_id`),
-  KEY `delivery_ibfk_2` (`address_id`),
-  CONSTRAINT `delivery_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
-  CONSTRAINT `delivery_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `address` (`address_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: favorite_product
--- ============================================
-DROP TABLE IF EXISTS `favorite_product`;
-
-CREATE TABLE `favorite_product` (
-  `favorite_id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `product_id` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`favorite_id`),
-  UNIQUE KEY `unique_user_product` (`user_id`,`product_id`),
-  KEY `idx_user_id` (`user_id`),
-  KEY `idx_product_id` (`product_id`),
-  CONSTRAINT `favorite_product_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `favorite_product_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: location
--- ============================================
-DROP TABLE IF EXISTS `location`;
-
-CREATE TABLE `location` (
-  `city_id` int NOT NULL,
-  `city` varchar(100) DEFAULT NULL,
-  `zip_code` int DEFAULT NULL,
-  `Is_main_city` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`city_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: order_item
--- ============================================
-DROP TABLE IF EXISTS `order_item`;
-
-CREATE TABLE `order_item` (
-  `order_item_id` int NOT NULL AUTO_INCREMENT,
-  `order_id` int NOT NULL,
-  `variant_id` int DEFAULT NULL,
-  `quantity` int NOT NULL,
-  `price` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`order_item_id`),
-  KEY `order_id` (`order_id`),
-  KEY `order_item_ibfk_2` (`variant_id`),
-  CONSTRAINT `order_item_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `order_item_ibfk_2` FOREIGN KEY (`variant_id`) REFERENCES `variant` (`variant_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: orders
--- ============================================
-DROP TABLE IF EXISTS `orders`;
-
-CREATE TABLE `orders` (
-  `order_id` int NOT NULL AUTO_INCREMENT,
-  `cart_id` int NOT NULL,
-  `user_id` int NOT NULL,
-  `order_date` datetime NOT NULL,
-  `total_amount` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`order_id`),
-  KEY `cart_id` (`cart_id`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `cart` (`cart_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: payment
--- ============================================
-DROP TABLE IF EXISTS `payment`;
-
-CREATE TABLE `payment` (
-  `payment_id` int NOT NULL AUTO_INCREMENT,
-  `order_id` int NOT NULL,
-  `payment_method` varchar(30) NOT NULL,
-  `payment_status` varchar(30) NOT NULL,
-  `payment_date` datetime NOT NULL,
-  PRIMARY KEY (`payment_id`),
-  KEY `order_id` (`order_id`),
-  CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ============================================
--- Table: product
--- ============================================
+-- Table: product (depends on: category)
 DROP TABLE IF EXISTS `product`;
-
 CREATE TABLE `product` (
   `product_id` int NOT NULL AUTO_INCREMENT,
   `product_name` varchar(100) DEFAULT NULL,
@@ -262,25 +82,8 @@ CREATE TABLE `product` (
   CONSTRAINT `product_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ============================================
--- Table: quarterly_sales_report
--- ============================================
-DROP TABLE IF EXISTS `quarterly_sales_report`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `quarterly_sales_report` AS select `quarterly_data`.`year` AS `year`,`quarterly_data`.`quarter` AS `quarter`,concat('Q',`quarterly_data`.`quarter`,' ',`quarterly_data`.`year`) AS `quarter_label`,`quarterly_data`.`total_orders` AS `total_orders`,`quarterly_data`.`unique_customers` AS `unique_customers`,`quarterly_data`.`total_revenue` AS `total_revenue`,`quarterly_data`.`average_order_value` AS `average_order_value`,`quarterly_data`.`total_items_sold` AS `total_items_sold` from (select year(`o`.`order_date`) AS `year`,quarter(`o`.`order_date`) AS `quarter`,count(distinct `o`.`order_id`) AS `total_orders`,count(distinct `o`.`user_id`) AS `unique_customers`,sum(`o`.`total_amount`) AS `total_revenue`,avg(`o`.`total_amount`) AS `average_order_value`,sum(`oi`.`quantity`) AS `total_items_sold` from (`orders` `o` left join `order_item` `oi` on((`o`.`order_id` = `oi`.`order_id`))) group by year(`o`.`order_date`),quarter(`o`.`order_date`)) `quarterly_data` order by `quarterly_data`.`year` desc,`quarterly_data`.`quarter` desc;
-
--- ============================================
--- Table: top_selling_products
--- ============================================
-DROP TABLE IF EXISTS `top_selling_products`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `top_selling_products` AS select `p`.`product_id` AS `product_id`,`p`.`product_name` AS `product_name`,`c`.`category_name` AS `category_name`,`v`.`variant_id` AS `variant_id`,`v`.`variant_name` AS `variant_name`,`v`.`SKU` AS `SKU`,sum(`oi`.`quantity`) AS `total_quantity_sold`,sum((`oi`.`quantity` * `oi`.`price`)) AS `total_revenue`,avg(`oi`.`price`) AS `average_price`,count(distinct `oi`.`order_id`) AS `number_of_orders`,min(`o`.`order_date`) AS `first_sale_date`,max(`o`.`order_date`) AS `last_sale_date` from ((((`order_item` `oi` join `variant` `v` on((`oi`.`variant_id` = `v`.`variant_id`))) join `product` `p` on((`v`.`product_id` = `p`.`product_id`))) left join `category` `c` on((`p`.`category_id` = `c`.`category_id`))) join `orders` `o` on((`oi`.`order_id` = `o`.`order_id`))) group by `p`.`product_id`,`p`.`product_name`,`c`.`category_name`,`v`.`variant_id`,`v`.`variant_name`,`v`.`SKU` order by `total_quantity_sold` desc;
-
--- ============================================
--- Table: user
--- ============================================
+-- Table: user (depends on: address)
 DROP TABLE IF EXISTS `user`;
-
 CREATE TABLE `user` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `user_name` varchar(50) DEFAULT NULL,
@@ -295,10 +98,11 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ============================================
--- Table: variant
+-- PHASE 3: Tables with multiple dependencies
 -- ============================================
-DROP TABLE IF EXISTS `variant`;
 
+-- Table: variant (depends on: product)
+DROP TABLE IF EXISTS `variant`;
 CREATE TABLE `variant` (
   `variant_id` int NOT NULL AUTO_INCREMENT,
   `variant_name` varchar(50) NOT NULL,
@@ -311,22 +115,51 @@ CREATE TABLE `variant` (
   CONSTRAINT `variant_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ============================================
--- Table: variant_attribute
--- ============================================
-DROP TABLE IF EXISTS `variant_attribute`;
+-- Table: cart (depends on: user)
+DROP TABLE IF EXISTS `cart`;
+CREATE TABLE `cart` (
+  `cart_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `created_date` datetime DEFAULT NULL,
+  `total_amount` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`cart_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `cart_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `variant_attribute` (
-  `attribute_id` int NOT NULL,
-  `attribute_name` varchar(20) DEFAULT NULL,
-  PRIMARY KEY (`attribute_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+-- Table: favorite_product (depends on: user, product)
+DROP TABLE IF EXISTS `favorite_product`;
+CREATE TABLE `favorite_product` (
+  `favorite_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`favorite_id`),
+  UNIQUE KEY `unique_user_product` (`user_id`,`product_id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_product_id` (`product_id`),
+  CONSTRAINT `favorite_product_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `favorite_product_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- ============================================
--- Table: variant_attribute_value
--- ============================================
+-- Table: admin_verification_codes (depends on: user)
+DROP TABLE IF EXISTS `admin_verification_codes`;
+CREATE TABLE `admin_verification_codes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `verification_code` varchar(6) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `expires_at` timestamp NOT NULL,
+  `is_used` tinyint(1) DEFAULT '0',
+  `attempts` int DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_code` (`user_id`,`verification_code`),
+  KEY `idx_expires` (`expires_at`),
+  CONSTRAINT `admin_verification_codes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Table: variant_attribute_value (depends on: variant, variant_attribute)
 DROP TABLE IF EXISTS `variant_attribute_value`;
-
 CREATE TABLE `variant_attribute_value` (
   `id` int NOT NULL,
   `variant_id` int DEFAULT NULL,
@@ -339,260 +172,142 @@ CREATE TABLE `variant_attribute_value` (
   CONSTRAINT `variant_attribute_value_ibfk_2` FOREIGN KEY (`attribute_id`) REFERENCES `variant_attribute` (`attribute_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- Table: cart_item (depends on: cart, variant)
+DROP TABLE IF EXISTS `cart_item`;
+CREATE TABLE `cart_item` (
+  `cart_item_id` int NOT NULL AUTO_INCREMENT,
+  `cart_id` int DEFAULT NULL,
+  `variant_id` int DEFAULT NULL,
+  `quantity` int DEFAULT NULL,
+  PRIMARY KEY (`cart_item_id`),
+  KEY `variant_id` (`variant_id`),
+  KEY `cart_item_ibfk_1` (`cart_id`),
+  CONSTRAINT `cart_item_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `cart` (`cart_id`) ON DELETE CASCADE,
+  CONSTRAINT `cart_item_ibfk_2` FOREIGN KEY (`variant_id`) REFERENCES `variant` (`variant_id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-
--- ============================================
--- MedSync Stored Procedures Export
--- Generated: 2025-10-22 15:42:41
--- ============================================
-
-USE `brightbuy`;
-
-DELIMITER $$
-
--- Procedure: AddUserWithAddress
-DROP PROCEDURE IF EXISTS `AddUserWithAddress`$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `AddUserWithAddress`(
-    IN p_user_id INT,
-    IN p_user_name VARCHAR(50),
-    IN p_email VARCHAR(100),
-    IN p_name VARCHAR(50),
-    IN p_password_hash VARCHAR(100),
-    IN p_user_type VARCHAR(30),
-    
-    -- Address fields
-    IN p_city_id INT,
-    IN p_house_number INT,
-    IN p_street VARCHAR(100),
-    IN p_city VARCHAR(100),
-    IN p_state VARCHAR(100)
-)
-BEGIN
-    DECLARE new_address_id INT;
-
-    -- Step 1: Insert address
-    INSERT INTO Address (
-        address_id, city_id, house_number, street, city, state
-    )
-    VALUES (
-        NULL, p_city_id, p_house_number, p_street, p_city, p_state
-    );
-
-    -- Step 2: Get the newly inserted address_id
-    SET new_address_id = LAST_INSERT_ID();
-
-    -- Step 3: Insert user with the new address_id
-    INSERT INTO User (
-        user_id, user_name, email, name, password_hash, user_type, address_id
-    )
-    VALUES (
-        p_user_id, p_user_name, p_email, p_name, p_password_hash, p_user_type, new_address_id
-    );
-END$$
-
--- Procedure: GetOrderSummary
-DROP PROCEDURE IF EXISTS `GetOrderSummary`$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `GetOrderSummary`(
-    IN p_user_id INT
-)
-BEGIN
-    SELECT 
-        o.order_id,
-        o.order_date,
-        o.total_amount,
-        oi.quantity,
-        oi.price,
-        p.product_name,
-        v.variant_name,
-        d.delivery_status
-    FROM orders o
-    JOIN order_item oi ON o.order_id = oi.order_id
-    LEFT JOIN variant v ON oi.variant_id = v.variant_id  
-    LEFT JOIN product p ON v.product_id = p.product_id
-    LEFT JOIN delivery d ON o.order_id = d.order_id
-    WHERE o.user_id = p_user_id
-    ORDER BY o.order_date DESC;
-END$$
-
--- Procedure: GetUserCart
-DROP PROCEDURE IF EXISTS `GetUserCart`$$
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `GetUserCart`(
-    IN p_user_id INT
-)
-BEGIN
-    SELECT 
-        c.cart_id,
-        c.user_id,
-        c.total_amount as cart_total,
-        ci.cart_item_id,
-        ci.variant_id,
-        ci.quantity,
-        v.variant_name,
-        v.price,
-        v.SKU,
-        v.quantity as stock_available,
-        p.product_id,
-        p.product_name,
-        p.description,
-        cat.category_name,
-        (ci.quantity * v.price) as item_total,
-        CASE 
-            WHEN v.quantity >= ci.quantity THEN 'In Stock'
-            WHEN v.quantity > 0 THEN 'Limited Stock'
-            ELSE 'Out of Stock'
-        END as stock_status
-    FROM cart c
-    LEFT JOIN cart_item ci ON c.cart_id = ci.cart_id
-    LEFT JOIN variant v ON ci.variant_id = v.variant_id
-    LEFT JOIN product p ON v.product_id = p.product_id
-    LEFT JOIN category cat ON p.category_id = cat.category_id
-    WHERE c.user_id = p_user_id
-    ORDER BY ci.cart_item_id DESC;
-END$$
-
-DELIMITER ;
-
+-- Table: orders (depends on: cart, user)
+DROP TABLE IF EXISTS `orders`;
+CREATE TABLE `orders` (
+  `order_id` int NOT NULL AUTO_INCREMENT,
+  `cart_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `order_date` datetime NOT NULL,
+  `total_amount` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`order_id`),
+  KEY `cart_id` (`cart_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`cart_id`) REFERENCES `cart` (`cart_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ============================================
--- MedSync Functions Export
--- Generated: 2025-10-22 15:42:41
+-- PHASE 4: Tables with complex dependencies
 -- ============================================
 
-USE `brightbuy`;
+-- Table: order_item (depends on: orders, variant)
+DROP TABLE IF EXISTS `order_item`;
+CREATE TABLE `order_item` (
+  `order_item_id` int NOT NULL AUTO_INCREMENT,
+  `order_id` int NOT NULL,
+  `variant_id` int DEFAULT NULL,
+  `quantity` int NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`order_item_id`),
+  KEY `order_id` (`order_id`),
+  KEY `order_item_ibfk_2` (`variant_id`),
+  CONSTRAINT `order_item_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `order_item_ibfk_2` FOREIGN KEY (`variant_id`) REFERENCES `variant` (`variant_id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-DELIMITER $$
+-- Table: payment (depends on: orders)
+DROP TABLE IF EXISTS `payment`;
+CREATE TABLE `payment` (
+  `payment_id` int NOT NULL AUTO_INCREMENT,
+  `order_id` int NOT NULL,
+  `payment_method` varchar(30) NOT NULL,
+  `payment_status` varchar(30) NOT NULL,
+  `payment_date` datetime NOT NULL,
+  PRIMARY KEY (`payment_id`),
+  KEY `order_id` (`order_id`),
+  CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- No functions found
+-- Table: delivery (depends on: orders, address)
+DROP TABLE IF EXISTS `delivery`;
+CREATE TABLE `delivery` (
+  `delivery_id` int NOT NULL AUTO_INCREMENT,
+  `order_id` int DEFAULT NULL,
+  `delivery_method` varchar(50) DEFAULT NULL,
+  `address_id` int DEFAULT NULL,
+  `estimated_delivery_date` date DEFAULT NULL,
+  `delivery_status` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`delivery_id`),
+  KEY `order_id` (`order_id`),
+  KEY `delivery_ibfk_2` (`address_id`),
+  CONSTRAINT `delivery_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
+  CONSTRAINT `delivery_ibfk_2` FOREIGN KEY (`address_id`) REFERENCES `address` (`address_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-DELIMITER ;
+-- Table: card (depends on: orders)
+DROP TABLE IF EXISTS `card`;
+CREATE TABLE `card` (
+  `card_id` int NOT NULL AUTO_INCREMENT,
+  `order_id` int DEFAULT NULL,
+  `card_number` varchar(50) DEFAULT NULL,
+  `card_name` varchar(50) DEFAULT NULL,
+  `expiry_date` varchar(50) DEFAULT NULL,
+  `CVV` varchar(10) DEFAULT NULL,
+  PRIMARY KEY (`card_id`),
+  KEY `order_id` (`order_id`),
+  CONSTRAINT `card_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-
--- ============================================
--- MedSync Triggers Export
--- Generated: 2025-10-22 15:42:41
--- ============================================
-
-USE `brightbuy`;
-
-DELIMITER $$
-
--- Trigger: check_cvv_length
-DROP TRIGGER IF EXISTS `check_cvv_length`$$
-
-CREATE DEFINER=`himak`@`%` TRIGGER `check_cvv_length` BEFORE INSERT ON `card` FOR EACH ROW BEGIN
-    IF LENGTH(NEW.CVV) != 3 OR NEW.CVV REGEXP '[^0-9]' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'CVV must be exactly 3 digits';
-    END IF;
-END$$
-
--- Trigger: set_default_delivery_status
-DROP TRIGGER IF EXISTS `set_default_delivery_status`$$
-
-CREATE DEFINER=`himak`@`%` TRIGGER `set_default_delivery_status` BEFORE INSERT ON `delivery` FOR EACH ROW BEGIN
-    IF NEW.delivery_status IS NULL THEN
-        SET NEW.delivery_status = 'Pending';
-    END IF;
-END$$
-
--- Trigger: trg_check_email_before_insert
-DROP TRIGGER IF EXISTS `trg_check_email_before_insert`$$
-
-CREATE DEFINER=`himak`@`%` TRIGGER `trg_check_email_before_insert` BEFORE INSERT ON `user` FOR EACH ROW BEGIN
-    IF NEW.email NOT LIKE '%@%' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Please enter a valid email address. It must include the "@" symbol (e.g., name@example.com).';
-    END IF;
-END$$
-
--- Trigger: check_variant_quantity
-DROP TRIGGER IF EXISTS `check_variant_quantity`$$
-
-CREATE DEFINER=`himak`@`%` TRIGGER `check_variant_quantity` BEFORE UPDATE ON `variant` FOR EACH ROW BEGIN
-    IF NEW.quantity < 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Quantity cannot be negative';
-    END IF;
-END$$
-
--- Trigger: prevent_negative_stock
-DROP TRIGGER IF EXISTS `prevent_negative_stock`$$
-
-CREATE DEFINER=`root`@`localhost` TRIGGER `prevent_negative_stock` BEFORE UPDATE ON `variant` FOR EACH ROW BEGIN
-    IF NEW.quantity < 0 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Stock cannot be negative';
-    END IF;
-END$$
-
--- Trigger: prevent_variant_delete_if_in_order
-DROP TRIGGER IF EXISTS `prevent_variant_delete_if_in_order`$$
-
-CREATE DEFINER=`root`@`localhost` TRIGGER `prevent_variant_delete_if_in_order` BEFORE DELETE ON `variant` FOR EACH ROW BEGIN
-            -- Check if this variant is referenced in any order_item
-            IF EXISTS (
-                SELECT 1
-                FROM order_item
-                WHERE variant_id = OLD.variant_id
-            ) THEN
-                SIGNAL SQLSTATE '45000'
-                SET MESSAGE_TEXT = 'Cannot delete variant: This variant is part of existing orders and cannot be removed.';
-            END IF;
-        END$$
-
-DELIMITER ;
-
+SET FOREIGN_KEY_CHECKS=1;
 
 -- ============================================
--- MedSync Views Export
--- Generated: 2025-10-22 15:42:41
+-- DATA INSERTION
 -- ============================================
 
-USE `brightbuy`;
+-- Insert location data
+INSERT INTO `location` VALUES
+  (1, 'Dallas', 120, 1),
+  (2, 'Houston', 121, 1),
+  (3, 'San Antonio', 122, 1),
+  (4, 'Fort Worth', 123, 1),
+  (5, 'Austin', 124, 1),
+  (6, 'El Paso', 125, 1),
+  (7, 'Arlington', 126, 0),
+  (8, 'Corpus Christi', 127, 0),
+  (9, 'Plano', 128, 0),
+  (10, 'Lubbock', 129, 0),
+  (11, 'Irving', 130, 0);
 
--- View: category_order_summary
-DROP VIEW IF EXISTS `category_order_summary`;
+-- Insert category data
+INSERT INTO `category` VALUES
+  (1, 'Mobile & Accessories', NULL),
+  (2, 'Computers & Gaming', NULL),
+  (3, 'Smart Tech & Lifestyle', NULL),
+  (4, 'Smartphones', 1),
+  (5, 'Mobile Accessories', 1),
+  (6, 'Tablets & E-Readers', 1),
+  (7, 'Laptops', 2),
+  (8, 'Mouse & Keyboards', 2),
+  (9, 'Gaming Consoles', 2),
+  (10, 'Smart Watches & Wearables', 3),
+  (11, 'Smart Home Devices', 3),
+  (12, 'Toys & Gadgets', 3),
+  (13, 'Bluetooth Speakers', 3);
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `category_order_summary` AS select coalesce(`c`.`category_name`,'Uncategorized') AS `category_name`,`c`.`category_id` AS `category_id`,count(distinct `o`.`order_id`) AS `total_orders`,sum(`oi`.`quantity`) AS `total_items_sold`,sum((`oi`.`quantity` * `oi`.`price`)) AS `total_revenue`,avg((`oi`.`quantity` * `oi`.`price`)) AS `average_order_value`,count(distinct `p`.`product_id`) AS `unique_products`,min(`o`.`order_date`) AS `first_order_date`,max(`o`.`order_date`) AS `last_order_date` from ((((`order_item` `oi` join `orders` `o` on((`oi`.`order_id` = `o`.`order_id`))) join `variant` `v` on((`oi`.`variant_id` = `v`.`variant_id`))) join `product` `p` on((`v`.`product_id` = `p`.`product_id`))) left join `category` `c` on((`p`.`category_id` = `c`.`category_id`))) group by `c`.`category_id`,`c`.`category_name` order by `total_revenue` desc;
+-- Insert variant_attribute data
+INSERT INTO `variant_attribute` VALUES
+  (1, 'Model'),
+  (2, 'Colour'),
+  (3, 'Released Year'),
+  (4, 'Warranty');
 
--- View: customer_order_payment_summary
-DROP VIEW IF EXISTS `customer_order_payment_summary`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `customer_order_payment_summary` AS select `u`.`user_id` AS `user_id`,`u`.`user_name` AS `user_name`,`u`.`email` AS `email`,`u`.`name` AS `full_name`,`o`.`order_id` AS `order_id`,`o`.`order_date` AS `order_date`,`o`.`total_amount` AS `total_amount`,`p`.`payment_method` AS `payment_method`,`p`.`payment_status` AS `payment_status`,`p`.`payment_date` AS `payment_date`,`d`.`delivery_status` AS `delivery_status`,`d`.`delivery_method` AS `delivery_method`,`d`.`estimated_delivery_date` AS `estimated_delivery_date`,count(`oi`.`order_item_id`) AS `items_in_order`,sum(`oi`.`quantity`) AS `total_quantity` from ((((`user` `u` left join `orders` `o` on((`u`.`user_id` = `o`.`user_id`))) left join `payment` `p` on((`o`.`order_id` = `p`.`order_id`))) left join `delivery` `d` on((`o`.`order_id` = `d`.`order_id`))) left join `order_item` `oi` on((`o`.`order_id` = `oi`.`order_id`))) group by `u`.`user_id`,`u`.`user_name`,`u`.`email`,`u`.`name`,`o`.`order_id`,`o`.`order_date`,`o`.`total_amount`,`p`.`payment_method`,`p`.`payment_status`,`p`.`payment_date`,`d`.`delivery_status`,`d`.`delivery_method`,`d`.`estimated_delivery_date` order by `u`.`user_id`,`o`.`order_date` desc;
-
--- View: customer_summary_statistics
-DROP VIEW IF EXISTS `customer_summary_statistics`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `customer_summary_statistics` AS select `u`.`user_id` AS `user_id`,`u`.`user_name` AS `user_name`,`u`.`email` AS `email`,`u`.`name` AS `full_name`,count(distinct `o`.`order_id`) AS `total_orders`,sum(`o`.`total_amount`) AS `total_spent`,avg(`o`.`total_amount`) AS `average_order_value`,min(`o`.`order_date`) AS `first_order_date`,max(`o`.`order_date`) AS `last_order_date`,sum((case when (`p`.`payment_status` = 'completed') then 1 else 0 end)) AS `completed_payments`,sum((case when (`p`.`payment_status` = 'pending') then 1 else 0 end)) AS `pending_payments`,sum((case when (`d`.`delivery_status` = 'delivered') then 1 else 0 end)) AS `delivered_orders`,sum((case when (`d`.`delivery_status` = 'pending') then 1 else 0 end)) AS `pending_deliveries` from (((`user` `u` left join `orders` `o` on((`u`.`user_id` = `o`.`user_id`))) left join `payment` `p` on((`o`.`order_id` = `p`.`order_id`))) left join `delivery` `d` on((`o`.`order_id` = `d`.`order_id`))) group by `u`.`user_id`,`u`.`user_name`,`u`.`email`,`u`.`name` having (`total_orders` > 0) order by `total_spent` desc;
-
--- View: quarterly_sales_report
-DROP VIEW IF EXISTS `quarterly_sales_report`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `quarterly_sales_report` AS select `quarterly_data`.`year` AS `year`,`quarterly_data`.`quarter` AS `quarter`,concat('Q',`quarterly_data`.`quarter`,' ',`quarterly_data`.`year`) AS `quarter_label`,`quarterly_data`.`total_orders` AS `total_orders`,`quarterly_data`.`unique_customers` AS `unique_customers`,`quarterly_data`.`total_revenue` AS `total_revenue`,`quarterly_data`.`average_order_value` AS `average_order_value`,`quarterly_data`.`total_items_sold` AS `total_items_sold` from (select year(`o`.`order_date`) AS `year`,quarter(`o`.`order_date`) AS `quarter`,count(distinct `o`.`order_id`) AS `total_orders`,count(distinct `o`.`user_id`) AS `unique_customers`,sum(`o`.`total_amount`) AS `total_revenue`,avg(`o`.`total_amount`) AS `average_order_value`,sum(`oi`.`quantity`) AS `total_items_sold` from (`orders` `o` left join `order_item` `oi` on((`o`.`order_id` = `oi`.`order_id`))) group by year(`o`.`order_date`),quarter(`o`.`order_date`)) `quarterly_data` order by `quarterly_data`.`year` desc,`quarterly_data`.`quarter` desc;
-
--- View: top_selling_products
-DROP VIEW IF EXISTS `top_selling_products`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `top_selling_products` AS select `p`.`product_id` AS `product_id`,`p`.`product_name` AS `product_name`,`c`.`category_name` AS `category_name`,`v`.`variant_id` AS `variant_id`,`v`.`variant_name` AS `variant_name`,`v`.`SKU` AS `SKU`,sum(`oi`.`quantity`) AS `total_quantity_sold`,sum((`oi`.`quantity` * `oi`.`price`)) AS `total_revenue`,avg(`oi`.`price`) AS `average_price`,count(distinct `oi`.`order_id`) AS `number_of_orders`,min(`o`.`order_date`) AS `first_sale_date`,max(`o`.`order_date`) AS `last_sale_date` from ((((`order_item` `oi` join `variant` `v` on((`oi`.`variant_id` = `v`.`variant_id`))) join `product` `p` on((`v`.`product_id` = `p`.`product_id`))) left join `category` `c` on((`p`.`category_id` = `c`.`category_id`))) join `orders` `o` on((`oi`.`order_id` = `o`.`order_id`))) group by `p`.`product_id`,`p`.`product_name`,`c`.`category_name`,`v`.`variant_id`,`v`.`variant_name`,`v`.`SKU` order by `total_quantity_sold` desc;
-
-
-
--- ============================================
--- MedSync Data (DML) Export
--- Generated: 2025-10-22 15:42:41
--- ============================================
-
-USE `brightbuy`;
-
-SET FOREIGN_KEY_CHECKS=0;
-
--- ============================================
--- Data for table: address (14 rows)
--- ============================================
-
-INSERT INTO `address` (`address_id`, `city_id`, `house_number`, `street`, `city`, `state`) VALUES
+-- Insert address data  
+INSERT INTO `address` VALUES
   (18, 1, 26, 'Main street', 'Dallas', 'Texas'),
   (19, 5, 6, 'Hill street', 'Austin', 'Texas'),
   (21, 5, 22, 'Green street', 'Austin', 'Texas'),
@@ -608,255 +323,8 @@ INSERT INTO `address` (`address_id`, `city_id`, `house_number`, `street`, `city`
   (37, 3, 98, 'hh', 'San Antonio', 'Texas'),
   (38, 4, 33, 'bean street', 'Fort Worth', 'Texas');
 
--- ============================================
--- Data for table: admin_verification_codes (9 rows)
--- ============================================
-
-INSERT INTO `admin_verification_codes` (`id`, `user_id`, `verification_code`, `created_at`, `expires_at`, `is_used`, `attempts`) VALUES
-  (3, 13, '629660', '2025-10-21 14:35:11', '2025-10-21 14:45:12', 1, 0),
-  (4, 13, '201277', '2025-10-21 14:35:41', '2025-10-21 14:45:42', 1, 0),
-  (5, 13, '418803', '2025-10-21 14:52:20', '2025-10-21 15:02:21', 1, 0),
-  (6, 13, '204965', '2025-10-21 14:52:53', '2025-10-21 15:02:54', 1, 2),
-  (7, 13, '715269', '2025-10-21 18:27:28', '2025-10-21 18:37:29', 1, 1),
-  (8, 13, '157224', '2025-10-21 19:41:46', '2025-10-21 19:51:47', 1, 0),
-  (9, 13, '424791', '2025-10-21 20:07:34', '2025-10-21 20:17:34', 1, 1),
-  (10, 13, '882913', '2025-10-21 20:34:50', '2025-10-21 20:44:50', 1, 0),
-  (11, 13, '068378', '2025-10-22 10:35:26', '2025-10-22 10:45:27', 1, 0);
-
--- ============================================
--- Data for table: card (6 rows)
--- ============================================
-
-INSERT INTO `card` (`card_id`, `order_id`, `card_number`, `card_name`, `expiry_date`, `CVV`) VALUES
-  (1, 5, '3846 0634 0875 6340', 'Hima', '12/26', '333'),
-  (2, 7, '7890 6976 3562 7768', 'Hima', '05/27', '666'),
-  (3, 9, '6275 1694 3914 0121', 'jsbcksdc', '06/29', '222'),
-  (4, 11, '9673 5426 6763 4345', 'kchjgc', '12/34', '586'),
-  (5, 12, '3262 7356 9845 2374', 'shamila', '04/26', '678'),
-  (6, 13, '6324 5932 3022 4454', 'jdlksjhfls', '06/29', '367');
-
--- ============================================
--- Data for table: cart (5 rows)
--- ============================================
-
-INSERT INTO `cart` (`cart_id`, `user_id`, `created_date`, `total_amount`) VALUES
-  (1, 10, '2025-10-11 10:39:11', '0.00'),
-  (2, 11, '2025-10-11 13:03:09', '0.00'),
-  (3, 13, NULL, '0.00'),
-  (4, 20, NULL, '59.00'),
-  (5, 22, NULL, '0.00');
-
--- ============================================
--- Data for table: cart_item (1 rows)
--- ============================================
-
-INSERT INTO `cart_item` (`cart_item_id`, `cart_id`, `variant_id`, `quantity`) VALUES
-  (27, 4, 7, 1);
-
--- ============================================
--- Data for table: category (13 rows)
--- ============================================
-
-INSERT INTO `category` (`category_id`, `category_name`, `parent_category_id`) VALUES
-  (1, 'Mobile & Accessories', NULL),
-  (2, 'Computers & Gaming', NULL),
-  (3, 'Smart Tech & Lifestyle', NULL),
-  (4, 'Smartphones', 1),
-  (5, 'Mobile Accessories', 1),
-  (6, 'Tablets & E-Readers', 1),
-  (7, 'Laptops', 2),
-  (8, 'Mouse & Keyboards', 2),
-  (9, 'Gaming Consoles', 2),
-  (10, 'Smart Watches & Wearables', 3),
-  (11, 'Smart Home Devices', 3),
-  (12, 'Toys & Gadgets', 3),
-  (13, 'Bluetooth Speakers', 3);
-
--- ============================================
--- Data for table: category_order_summary (8 rows)
--- ============================================
-
-INSERT INTO `category_order_summary` (`category_name`, `category_id`, `total_orders`, `total_items_sold`, `total_revenue`, `average_order_value`, `unique_products`, `first_order_date`, `last_order_date`) VALUES
-  ('Smartphones', 4, 8, '22', '22950.92', '1912.576667', 4, '2025-10-13 10:05:21', '2025-10-21 14:19:57'),
-  ('Laptops', 7, 2, '5', '6895.00', '3447.500000', 2, '2025-10-13 10:05:21', '2025-10-16 18:06:29'),
-  ('Tablets & E-Readers', 6, 2, '2', '1398.00', '699.000000', 2, '2025-10-21 10:25:08', '2025-10-21 10:29:10'),
-  ('Mobile Accessories', 5, 5, '10', '956.94', '159.490000', 3, '2025-10-13 10:05:21', '2025-10-20 06:54:56'),
-  ('Toys & Gadgets', 12, 1, '1', '199.00', '199.000000', 1, '2025-10-21 10:25:08', '2025-10-21 10:25:08'),
-  ('Mouse & Keyboards', 8, 1, '3', '183.50', '91.750000', 2, '2025-10-14 15:54:57', '2025-10-14 15:54:57'),
-  ('Gaming Consoles', 9, 1, '1', '100.50', '100.500000', 1, '2025-10-13 10:05:21', '2025-10-13 10:05:21'),
-  ('Smart Home Devices', 11, 1, '1', '99.00', '99.000000', 1, '2025-10-18 13:18:52', '2025-10-18 13:18:52');
-
--- ============================================
--- Data for table: contact (3 rows)
--- ============================================
-
-INSERT INTO `contact` (`contact_id`, `customer_name`, `email`, `subject_name`, `message`) VALUES
-  (1, 'John Doe', 'a@b.com', 'Test', 'This is a test message'),
-  (2, 'Hima', 'himak@gmail.com', 'is', 'hmfj'),
-  (3, 'Himandi', 'fernandoshamila@gmail.com', 'Testtt', 'hiiiiii');
-
--- ============================================
--- Data for table: customer_order_payment_summary (21 rows)
--- ============================================
-
-INSERT INTO `customer_order_payment_summary` (`user_id`, `user_name`, `email`, `full_name`, `order_id`, `order_date`, `total_amount`, `payment_method`, `payment_status`, `payment_date`, `delivery_status`, `delivery_method`, `estimated_delivery_date`, `items_in_order`, `total_quantity`) VALUES
-  (10, 'himak', 'himanndhikuruppu@gmail.com', 'Himandhi K', 14, '2025-10-20 10:00:10', '4150.99', 'cod', 'pending', '2025-10-20 10:00:10', 'pending', 'store_pickup', '2025-10-22', 4, '5'),
-  (10, 'himak', 'himanndhikuruppu@gmail.com', 'Himandhi K', 9, '2025-10-16 18:06:29', '6695.00', 'card', 'completed', '2025-10-16 18:06:29', 'Delivered', 'home_delivery', '2025-10-21', 2, '5'),
-  (10, 'himak', 'himanndhikuruppu@gmail.com', 'Himandhi K', 7, '2025-10-16 10:19:21', '7674.97', 'card', 'completed', '2025-10-16 10:19:21', 'Delivered', 'store_pickup', '2025-10-18', 3, '8'),
-  (10, 'himak', 'himanndhikuruppu@gmail.com', 'Himandhi K', 6, '2025-10-14 16:31:32', '2198.00', 'cod', 'pending', '2025-10-14 16:31:32', 'pending', 'store_pickup', '2025-10-16', 1, '2'),
-  (10, 'himak', 'himanndhikuruppu@gmail.com', 'Himandhi K', 5, '2025-10-14 15:54:57', '183.50', 'card', 'completed', '2025-10-14 15:54:57', 'pending', 'store_pickup', '2025-10-16', 2, '3'),
-  (11, 'hima2', 'himanndhik@gmail.com', 'Himandhi K', 15, '2025-10-21 10:25:08', '498.00', 'cod', 'pending', '2025-10-21 10:25:08', 'pending', 'store_pickup', '2025-10-23', 2, '2'),
-  (11, 'hima2', 'himanndhik@gmail.com', 'Himandhi K', 13, '2025-10-20 06:54:56', '59.00', 'card', 'completed', '2025-10-20 06:54:56', 'pending', 'store_pickup', '2025-10-22', 1, '1'),
-  (11, 'hima2', 'himanndhik@gmail.com', 'Himandhi K', 12, '2025-10-18 15:51:56', '2839.98', 'card', 'completed', '2025-10-18 15:51:56', 'pending', 'store_pickup', '2025-10-20', 1, '2'),
-  (11, 'hima2', 'himanndhik@gmail.com', 'Himandhi K', 11, '2025-10-18 13:18:52', '332.98', 'card', 'completed', '2025-10-18 13:18:52', 'Delivered', 'home_delivery', '2025-10-23', 2, '3'),
-  (11, 'hima2', 'himanndhik@gmail.com', 'Himandhi K', 4, '2025-10-13 10:34:12', '486.96', 'card', 'completed', '2025-10-13 10:34:12', 'pending', 'store_pickup', '2025-10-15', 2, '4'),
-  (11, 'hima2', 'himanndhik@gmail.com', 'Himandhi K', 3, '2025-10-13 10:19:54', '1099.00', 'cod', 'completed', '2025-10-13 10:19:54', 'pending', 'store_pickup', '2025-10-15', 1, '1'),
-  (11, 'hima2', 'himanndhik@gmail.com', 'Himandhi K', 2, '2025-10-13 10:05:21', '5397.48', 'card', 'completed', '2025-10-13 10:05:21', 'Delivered', 'home_delivery', '2025-10-18', 4, '6'),
-  (13, 'admin1', 'himandhik.23@cse.mrt.ac.lk', 'Admin 1', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL),
-  (17, 'Senilka1', 'senilkat@gmail.com', 'Senilka M T', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL),
-  (18, 'johndoe92', 'john.doe@example.com', 'John Doe', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL),
-  (19, 'test1', 'test1@gmail.com', 'Test 1', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL),
-  (20, 'thira1', 'thirani@gmail.com', 'Thirani Kuruppu', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL),
-  (21, 'hasini123', 'hasini@gmail.com', 'Hasini Lawanya', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL),
-  (22, 'hima6', 'fernandoshamila@gmail.com', 'Shamila Fernando', 17, '2025-10-21 14:19:57', '68.00', 'cod', 'pending', '2025-10-21 14:19:57', 'pending', 'home_delivery', '2025-10-29', 1, '2'),
-  (22, 'hima6', 'fernandoshamila@gmail.com', 'Shamila Fernando', 16, '2025-10-21 10:29:10', '1099.00', 'cod', 'pending', '2025-10-21 10:29:10', 'pending', 'store_pickup', '2025-10-23', 1, '1'),
-  (23, 'hima7', 'himandhikuruppu@gmail.com', 'Himandhi Kururppu', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL);
-
--- ============================================
--- Data for table: customer_summary_statistics (3 rows)
--- ============================================
-
-INSERT INTO `customer_summary_statistics` (`user_id`, `user_name`, `email`, `full_name`, `total_orders`, `total_spent`, `average_order_value`, `first_order_date`, `last_order_date`, `completed_payments`, `pending_payments`, `delivered_orders`, `pending_deliveries`) VALUES
-  (10, 'himak', 'himanndhikuruppu@gmail.com', 'Himandhi K', 5, '20902.46', '4180.492000', '2025-10-14 15:54:57', '2025-10-20 10:00:10', '3', '2', '2', '3'),
-  (11, 'hima2', 'himanndhik@gmail.com', 'Himandhi K', 7, '10713.40', '1530.485714', '2025-10-13 10:05:21', '2025-10-21 10:25:08', '6', '1', '2', '5'),
-  (22, 'hima6', 'fernandoshamila@gmail.com', 'Shamila Fernando', 2, '1167.00', '583.500000', '2025-10-21 10:29:10', '2025-10-21 14:19:57', '0', '2', '0', '2');
-
--- ============================================
--- Data for table: delivery (14 rows)
--- ============================================
-
-INSERT INTO `delivery` (`delivery_id`, `order_id`, `delivery_method`, `address_id`, `estimated_delivery_date`, `delivery_status`) VALUES
-  (1, 2, 'home_delivery', 29, '2025-10-18', 'Delivered'),
-  (2, 3, 'store_pickup', NULL, '2025-10-15', 'pending'),
-  (3, 4, 'store_pickup', NULL, '2025-10-15', 'pending'),
-  (4, 5, 'store_pickup', NULL, '2025-10-16', 'pending'),
-  (5, 6, 'store_pickup', NULL, '2025-10-16', 'pending'),
-  (6, 7, 'store_pickup', NULL, '2025-10-18', 'Delivered'),
-  (7, 9, 'home_delivery', 31, '2025-10-21', 'Delivered'),
-  (8, 11, 'home_delivery', 33, '2025-10-23', 'Delivered'),
-  (9, 12, 'store_pickup', NULL, '2025-10-20', 'pending'),
-  (10, 13, 'store_pickup', NULL, '2025-10-22', 'pending'),
-  (11, 14, 'store_pickup', NULL, '2025-10-22', 'pending'),
-  (12, 15, 'store_pickup', NULL, '2025-10-23', 'pending'),
-  (13, 16, 'store_pickup', NULL, '2025-10-23', 'pending'),
-  (14, 17, 'home_delivery', 37, '2025-10-29', 'pending');
-
--- ============================================
--- Data for table: favorite_product (5 rows)
--- ============================================
-
-INSERT INTO `favorite_product` (`favorite_id`, `user_id`, `product_id`, `created_at`) VALUES
-  (2, 11, 4, '2025-10-19 08:12:46'),
-  (3, 11, 18, '2025-10-19 08:12:50'),
-  (4, 10, 4, '2025-10-20 11:30:38'),
-  (5, 21, 33, '2025-10-20 17:10:31'),
-  (6, 21, 30, '2025-10-20 17:10:32');
-
--- ============================================
--- Data for table: location (11 rows)
--- ============================================
-
-INSERT INTO `location` (`city_id`, `city`, `zip_code`, `Is_main_city`) VALUES
-  (1, 'Dallas', 120, 1),
-  (2, 'Houston', 121, 1),
-  (3, 'San Antonio', 122, 1),
-  (4, 'Fort Worth', 123, 1),
-  (5, 'Austin', 124, 1),
-  (6, 'El Paso', 125, 1),
-  (7, 'Arlington', 126, 0),
-  (8, 'Corpus Christi', 127, 0),
-  (9, 'Plano', 128, 0),
-  (10, 'Lubbock', 129, 0),
-  (11, 'Irving', 130, 0);
-
--- ============================================
--- Data for table: order_item (27 rows)
--- ============================================
-
-INSERT INTO `order_item` (`order_item_id`, `order_id`, `variant_id`, `quantity`, `price`) VALUES
-  (1, 2, 47, 1, '100.50'),
-  (2, 2, 3, 2, '1419.99'),
-  (3, 2, 7, 1, '59.00'),
-  (4, 2, 30, 2, '1199.00'),
-  (5, 3, 1, 1, '1099.00'),
-  (6, 4, 15, 2, '116.99'),
-  (7, 4, 13, 2, '126.49'),
-  (8, 5, 35, 1, '42.50'),
-  (9, 5, 39, 2, '70.50'),
-  (10, 6, 1, 2, '1099.00'),
-  (11, 7, 3, 3, '1419.99'),
-  (12, 7, 1, 3, '1099.00'),
-  (13, 7, 7, 2, '59.00'),
-  (16, 9, 1, 2, '1099.00'),
-  (17, 9, 34, 3, '1499.00'),
-  (20, 11, 15, 2, '116.99'),
-  (21, 11, 59, 1, '99.00'),
-  (22, 12, 3, 2, '1419.99'),
-  (23, 13, 7, 1, '59.00'),
-  (24, 14, 3, 1, '1419.99'),
-  (25, 14, 1, 1, '1099.00'),
-  (26, 14, 86, 1, '34.00'),
-  (27, 14, 5, 2, '799.00'),
-  (28, 15, 27, 1, '299.00'),
-  (29, 15, 69, 1, '199.00'),
-  (30, 16, 19, 1, '1099.00'),
-  (31, 17, 86, 2, '34.00');
-
--- ============================================
--- Data for table: orders (14 rows)
--- ============================================
-
-INSERT INTO `orders` (`order_id`, `cart_id`, `user_id`, `order_date`, `total_amount`) VALUES
-  (2, 2, 11, '2025-10-13 10:05:21', '5397.48'),
-  (3, 2, 11, '2025-10-13 10:19:54', '1099.00'),
-  (4, 2, 11, '2025-10-13 10:34:12', '486.96'),
-  (5, 1, 10, '2025-10-14 15:54:57', '183.50'),
-  (6, 1, 10, '2025-10-14 16:31:32', '2198.00'),
-  (7, 1, 10, '2025-10-16 10:19:21', '7674.97'),
-  (9, 1, 10, '2025-10-16 18:06:29', '6695.00'),
-  (11, 2, 11, '2025-10-18 13:18:52', '332.98'),
-  (12, 2, 11, '2025-10-18 15:51:56', '2839.98'),
-  (13, 2, 11, '2025-10-20 06:54:56', '59.00'),
-  (14, 1, 10, '2025-10-20 10:00:10', '4150.99'),
-  (15, 2, 11, '2025-10-21 10:25:08', '498.00'),
-  (16, 5, 22, '2025-10-21 10:29:10', '1099.00'),
-  (17, 5, 22, '2025-10-21 14:19:57', '68.00');
-
--- ============================================
--- Data for table: payment (14 rows)
--- ============================================
-
-INSERT INTO `payment` (`payment_id`, `order_id`, `payment_method`, `payment_status`, `payment_date`) VALUES
-  (1, 2, 'card', 'completed', '2025-10-13 10:05:21'),
-  (2, 3, 'cod', 'completed', '2025-10-13 10:19:54'),
-  (3, 4, 'card', 'completed', '2025-10-13 10:34:12'),
-  (4, 5, 'card', 'completed', '2025-10-14 15:54:57'),
-  (5, 6, 'cod', 'pending', '2025-10-14 16:31:32'),
-  (6, 7, 'card', 'completed', '2025-10-16 10:19:21'),
-  (8, 9, 'card', 'completed', '2025-10-16 18:06:29'),
-  (10, 11, 'card', 'completed', '2025-10-18 13:18:52'),
-  (11, 12, 'card', 'completed', '2025-10-18 15:51:56'),
-  (12, 13, 'card', 'completed', '2025-10-20 06:54:56'),
-  (13, 14, 'cod', 'pending', '2025-10-20 10:00:10'),
-  (14, 15, 'cod', 'pending', '2025-10-21 10:25:08'),
-  (15, 16, 'cod', 'pending', '2025-10-21 10:29:10'),
-  (16, 17, 'cod', 'pending', '2025-10-21 14:19:57');
-
--- ============================================
--- Data for table: product (42 rows)
--- ============================================
-
-INSERT INTO `product` (`product_id`, `product_name`, `category_id`, `description`) VALUES
+-- Insert product data
+INSERT INTO `product` VALUES
   (1, 'Apple Phones', 4, 'A premium technology brand known for its innovative smartphones, laptops, and ecosystem of devices.'),
   (2, 'Samsung Phones', 4, 'A global electronics giant producing smartphones, TVs, home appliances, and cutting-edge technology solutions.'),
   (3, 'Google Phones', 4, 'A leading tech company specializing in internet services, AI solutions, and the Android operating system.'),
@@ -882,7 +350,7 @@ INSERT INTO `product` (`product_id`, `product_name`, `category_id`, `description
   (23, 'Xbox Series X', 9, 'Microsoft’s most powerful console, offered in 1TB Standard, Diablo IV, and Forza Horizon 5 bundles.'),
   (24, 'Nintendo Switch OLED Model', 9, 'A hybrid gaming console with a vibrant OLED display, available in White, Neon Red/Blue, and Zelda Edition.'),
   (25, 'Steam Deck', 9, 'A portable handheld gaming PC, available in 64GB LCD, 256GB SSD, and 512GB OLED versions.'),
-  (26, 'Apple Watch Series 9', 10, 'A premium smartwatch offering advanced health, fitness, and connectivity features.'),
+  (26, 'Apple Watch Series 9 GPS', 10, 'A premium smartwatch offering advanced health, fitness, and connectivity features.'),
   (27, 'Samsung Galaxy Watch 6', 10, 'A versatile smartwatch with sleek design, fitness tracking, and smart connectivity.'),
   (28, 'Fitbit Versa 4', 10, 'A fitness-focused smartwatch with health tracking and personalized insights.'),
   (29, 'Garmin Forerunner 265', 10, 'A performance smartwatch designed for athletes with GPS and training features.'),
@@ -900,40 +368,8 @@ INSERT INTO `product` (`product_id`, `product_name`, `category_id`, `description
   (41, 'Lenovo ThinkPlus K3 speaker', 13, 'Portable Bluetooth speaker with 360° sound.'),
   (46, 'Phone1', 4, 'test phone category');
 
--- ============================================
--- Data for table: quarterly_sales_report (1 rows)
--- ============================================
-
-INSERT INTO `quarterly_sales_report` (`year`, `quarter`, `quarter_label`, `total_orders`, `unique_customers`, `total_revenue`, `average_order_value`, `total_items_sold`) VALUES
-  (2025, 4, 'Q4 2025', 14, 3, '84974.65', '3147.209259', '45');
-
--- ============================================
--- Data for table: top_selling_products (16 rows)
--- ============================================
-
-INSERT INTO `top_selling_products` (`product_id`, `product_name`, `category_name`, `variant_id`, `variant_name`, `SKU`, `total_quantity_sold`, `total_revenue`, `average_price`, `number_of_orders`, `first_sale_date`, `last_sale_date`) VALUES
-  (1, 'Apple Phones', 'Smartphones', 1, 'iPhine 17 Pro', 'SKU001', '9', '9891.00', '1099.000000', 5, '2025-10-13 10:19:54', '2025-10-20 10:00:10'),
-  (2, 'Samsung Phones', 'Smartphones', 3, 'Galaxy S25 Ultra', 'SKU003', '8', '11359.92', '1419.990000', 4, '2025-10-13 10:05:21', '2025-10-20 10:00:10'),
-  (4, 'USB Cables', 'Mobile Accessories', 7, 'USB-C to Lightning', 'SKU007', '4', '236.00', '59.000000', 3, '2025-10-13 10:05:21', '2025-10-20 06:54:56'),
-  (8, 'Phone Cases', 'Mobile Accessories', 15, 'iPhone 17 Pro Max Silicone ', 'SKU015', '4', '467.96', '116.990000', 2, '2025-10-13 10:34:12', '2025-10-18 13:18:52'),
-  (17, 'Dell XPS 13 Plus', 'Laptops', 34, 'Dell XPS 13 Plus 16GB RAM / 512GB SSD', 'SKU034', '3', '4497.00', '1499.000000', 1, '2025-10-16 18:06:29', '2025-10-16 18:06:29'),
-  (46, 'Phone1', 'Smartphones', 86, 'testphone1', 'sku100', '3', '102.00', '34.000000', 2, '2025-10-20 10:00:10', '2025-10-21 14:19:57'),
-  (3, 'Google Phones', 'Smartphones', 5, 'Pixel 10', 'SKU005', '2', '1598.00', '799.000000', 1, '2025-10-20 10:00:10', '2025-10-20 10:00:10'),
-  (7, 'SD Cards', 'Mobile Accessories', 13, '128GB', 'SKU013', '2', '252.98', '126.490000', 1, '2025-10-13 10:34:12', '2025-10-13 10:34:12'),
-  (15, 'Apple MacBook Air M3', 'Laptops', 30, 'MacBook Air M3 13-inch 256 GB', 'SKU030', '2', '2398.00', '1199.000000', 1, '2025-10-13 10:05:21', '2025-10-13 10:05:21'),
-  (20, 'Logitech G Pro X Superlight Gaming Mouse', 'Mouse & Keyboards', 39, 'Logitech G Pro X Superlight (Black)', 'SKU039', '2', '141.00', '70.500000', 1, '2025-10-14 15:54:57', '2025-10-14 15:54:57'),
-  (10, 'Apple iPad Pro (M4)', 'Tablets & E-Readers', 19, 'iPad Pro M4 11-inch 256 GB Wi-Fi', 'SKU019', '1', '1099.00', '1099.000000', 1, '2025-10-21 10:29:10', '2025-10-21 10:29:10'),
-  (13, 'Amazon Kindle Oasis', 'Tablets & E-Readers', 27, 'Kindle Oasis 32 GB Wi-Fi', 'SKU027', '1', '299.00', '299.000000', 1, '2025-10-21 10:25:08', '2025-10-21 10:25:08'),
-  (18, 'Logitech MX Keys Wireless Keyboard', 'Mouse & Keyboards', 35, 'Logitech MX Keys (Graphite)', 'SKU035', '1', '42.50', '42.500000', 1, '2025-10-14 15:54:57', '2025-10-14 15:54:57'),
-  (24, 'Nintendo Switch OLED Model', 'Gaming Consoles', 47, 'Nintendo Switch OLED White', 'SKU047', '1', '100.50', '100.500000', 1, '2025-10-13 10:05:21', '2025-10-13 10:05:21'),
-  (30, 'Google Nest Hub (2nd Gen)', 'Smart Home Devices', 59, 'Google Nest Hub 2nd Gen Chalk', 'SKU059', '1', '99.00', '99.000000', 1, '2025-10-18 13:18:52', '2025-10-18 13:18:52'),
-  (35, 'Laser keyboard projector', 'Toys & Gadgets', 69, 'Laser Keyboard Projector 1.0', 'SKU069', '1', '199.00', '199.000000', 1, '2025-10-21 10:25:08', '2025-10-21 10:25:08');
-
--- ============================================
--- Data for table: user (10 rows)
--- ============================================
-
-INSERT INTO `user` (`user_id`, `user_name`, `email`, `name`, `password_hash`, `user_type`, `address_id`) VALUES
+-- Insert user data
+INSERT INTO `user` VALUES
   (10, 'himak', 'himanndhikuruppu@gmail.com', 'Himandhi K', '$2b$12$zk9EitI7xHFkEp9dZ/kmM.K0uw4E8yN843tFtlkZDU37kTRvZf8VG', 'customer', 18),
   (11, 'hima2', 'himanndhik@gmail.com', 'Himandhi K', '$2b$12$XSWYbOY2s2SaNYWc/LBbtuSyVZ7UXdTSiltXrS9Bae/ZZLIr1mAq6', 'customer', 19),
   (13, 'admin1', 'himandhik.23@cse.mrt.ac.lk', 'Admin 1', '$2b$12$4RnaCpSEVnamV6w2Bsy/f.ZJS.loj.Tv1t7gKrIiOjRYzua/qR4XO', 'admin', 21),
@@ -945,11 +381,8 @@ INSERT INTO `user` (`user_id`, `user_name`, `email`, `name`, `password_hash`, `u
   (22, 'hima6', 'fernandoshamila@gmail.com', 'Shamila Fernando', '$2b$12$zk0OqonZydH1Mo3Cm1sR6Og8eU1uXjHrqvTCxYX6xTL0t2I7DP42K', 'customer', 36),
   (23, 'hima7', 'himandhikuruppu@gmail.com', 'Himandhi Kururppu', '$2b$12$bHsgfibZrvjZXfw8Kz.4UOIYZLX/xzsrJB/toselr/BIiHHEbCquW', 'customer', 38);
 
--- ============================================
--- Data for table: variant (83 rows)
--- ============================================
-
-INSERT INTO `variant` (`variant_id`, `variant_name`, `product_id`, `price`, `quantity`, `SKU`) VALUES
+-- Insert variant data
+INSERT INTO `variant` VALUES
   (1, 'iPhine 17 Pro', 1, '1099.00', 40, 'SKU001'),
   (2, 'iPhone 17 Pro Max', 1, '1199.00', 50, 'SKU002'),
   (3, 'Galaxy S25 Ultra', 2, '1419.99', 42, 'SKU003'),
@@ -1034,21 +467,91 @@ INSERT INTO `variant` (`variant_id`, `variant_name`, `product_id`, `price`, `qua
   (82, 'Lenovo ThinkPlus 1.8', 41, '199.00', 50, 'SKU082'),
   (86, 'testphone1', 46, '34.00', 15, 'sku100');
 
--- ============================================
--- Data for table: variant_attribute (4 rows)
--- ============================================
+-- Insert admin_verification_codes data
+INSERT INTO `admin_verification_codes` VALUES
+  (3, 13, '629660', '2025-10-21 14:35:11', '2025-10-21 14:45:12', 1, 0),
+  (4, 13, '201277', '2025-10-21 14:35:41', '2025-10-21 14:45:42', 1, 0),
+  (5, 13, '418803', '2025-10-21 14:52:20', '2025-10-21 15:02:21', 1, 0),
+  (6, 13, '204965', '2025-10-21 14:52:53', '2025-10-21 15:02:54', 1, 2),
+  (7, 13, '715269', '2025-10-21 18:27:28', '2025-10-21 18:37:29', 1, 1),
+  (8, 13, '157224', '2025-10-21 19:41:46', '2025-10-21 19:51:47', 1, 0),
+  (9, 13, '424791', '2025-10-21 20:07:34', '2025-10-21 20:17:34', 1, 1),
+  (10, 13, '882913', '2025-10-21 20:34:50', '2025-10-21 20:44:50', 1, 0),
+  (11, 13, '068378', '2025-10-22 10:35:26', '2025-10-22 10:45:27', 1, 0);
 
-INSERT INTO `variant_attribute` (`attribute_id`, `attribute_name`) VALUES
-  (1, 'Model'),
-  (2, 'Colour'),
-  (3, 'Released Year'),
-  (4, 'Warranty');
+-- Insert cart data
+INSERT INTO `cart` VALUES
+  (1, 10, '2025-10-11 10:39:11', '0.00'),
+  (2, 11, '2025-10-11 13:03:09', '0.00'),
+  (3, 13, NULL, '0.00'),
+  (4, 20, NULL, '59.00'),
+  (5, 22, NULL, '0.00');
 
--- ============================================
--- Data for table: variant_attribute_value (264 rows)
--- ============================================
+-- Insert cart_item data
+INSERT INTO `cart_item` VALUES
+  (27, 4, 7, 1);
 
-INSERT INTO `variant_attribute_value` (`id`, `variant_id`, `attribute_id`, `value`) VALUES
+-- Insert favorite_product data
+INSERT INTO `favorite_product` VALUES
+  (2, 11, 4, '2025-10-19 08:12:46'),
+  (3, 11, 18, '2025-10-19 08:12:50'),
+  (4, 10, 4, '2025-10-20 11:30:38'),
+  (5, 21, 33, '2025-10-20 17:10:31'),
+  (6, 21, 30, '2025-10-20 17:10:32');
+
+-- Insert order data
+INSERT INTO `orders` VALUES
+  (2, 2, 11, '2025-10-13 10:05:21', '5397.48'),
+  (3, 2, 11, '2025-10-13 10:19:54', '1099.00'),
+  (4, 2, 11, '2025-10-13 10:34:12', '486.96'),
+  (5, 1, 10, '2025-10-14 15:54:57', '183.50'),
+  (6, 1, 10, '2025-10-14 16:31:32', '2198.00'),
+  (7, 1, 10, '2025-10-16 10:19:21', '7674.97'),
+  (9, 1, 10, '2025-10-16 18:06:29', '6695.00'),
+  (11, 2, 11, '2025-10-18 13:18:52', '332.98'),
+  (12, 2, 11, '2025-10-18 15:51:56', '2839.98'),
+  (13, 2, 11, '2025-10-20 06:54:56', '59.00'),
+  (14, 1, 10, '2025-10-20 10:00:10', '4150.99'),
+  (15, 2, 11, '2025-10-21 10:25:08', '498.00'),
+  (16, 5, 22, '2025-10-21 10:29:10', '1099.00'),
+  (17, 5, 22, '2025-10-21 14:19:57', '68.00');
+
+-- Insert payment data
+INSERT INTO `payment` VALUES
+  (1, 2, 'card', 'completed', '2025-10-13 10:05:21'),
+  (2, 3, 'cod', 'completed', '2025-10-13 10:19:54'),
+  (3, 4, 'card', 'completed', '2025-10-13 10:34:12'),
+  (4, 5, 'card', 'completed', '2025-10-14 15:54:57'),
+  (5, 6, 'cod', 'pending', '2025-10-14 16:31:32'),
+  (6, 7, 'card', 'completed', '2025-10-16 10:19:21'),
+  (8, 9, 'card', 'completed', '2025-10-16 18:06:29'),
+  (10, 11, 'card', 'completed', '2025-10-18 13:18:52'),
+  (11, 12, 'card', 'completed', '2025-10-18 15:51:56'),
+  (12, 13, 'card', 'completed', '2025-10-20 06:54:56'),
+  (13, 14, 'cod', 'pending', '2025-10-20 10:00:10'),
+  (14, 15, 'cod', 'pending', '2025-10-21 10:25:08'),
+  (15, 16, 'cod', 'pending', '2025-10-21 10:29:10'),
+  (16, 17, 'cod', 'pending', '2025-10-21 14:19:57');
+
+-- Insert delivery data
+INSERT INTO `delivery` VALUES
+  (1, 2, 'home_delivery', 29, '2025-10-18', 'Delivered'),
+  (2, 3, 'store_pickup', NULL, '2025-10-15', 'pending'),
+  (3, 4, 'store_pickup', NULL, '2025-10-15', 'pending'),
+  (4, 5, 'store_pickup', NULL, '2025-10-16', 'pending'),
+  (5, 6, 'store_pickup', NULL, '2025-10-16', 'pending'),
+  (6, 7, 'store_pickup', NULL, '2025-10-18', 'Delivered'),
+  (7, 9, 'home_delivery', 31, '2025-10-21', 'Delivered'),
+  (8, 11, 'home_delivery', 33, '2025-10-23', 'Delivered'),
+  (9, 12, 'store_pickup', NULL, '2025-10-20', 'pending'),
+  (10, 13, 'store_pickup', NULL, '2025-10-22', 'pending'),
+  (11, 14, 'store_pickup', NULL, '2025-10-22', 'pending'),
+  (12, 15, 'store_pickup', NULL, '2025-10-23', 'pending'),
+  (13, 16, 'store_pickup', NULL, '2025-10-23', 'pending'),
+  (14, 17, 'home_delivery', 37, '2025-10-29', 'pending');
+
+-- Insert variant_attribute_value data
+INSERT INTO `variant_attribute_value` VALUES
   (1, 1, 1, '17'),
   (2, 1, 2, 'Black'),
   (3, 1, 3, '2025'),
@@ -1318,6 +821,129 @@ INSERT INTO `variant_attribute_value` (`id`, `variant_id`, `attribute_id`, `valu
   (327, 82, 3, '2025'),
   (328, 82, 4, '15 months');
 
-SET FOREIGN_KEY_CHECKS=1;
+-- ============================================
+-- STORED PROCEDURES (DEFINER removed)
+-- ============================================
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `AddUserWithAddress`$$
+CREATE PROCEDURE `AddUserWithAddress`(
+    IN p_user_id INT,
+    IN p_user_name VARCHAR(50),
+    IN p_email VARCHAR(100),
+    IN p_name VARCHAR(50),
+    IN p_password_hash VARCHAR(100),
+    IN p_user_type VARCHAR(30),
+    IN p_city_id INT,
+    IN p_house_number INT,
+    IN p_street VARCHAR(100),
+    IN p_city VARCHAR(100),
+    IN p_state VARCHAR(100)
+)
+BEGIN
+    DECLARE new_address_id INT;
+    INSERT INTO Address (address_id, city_id, house_number, street, city, state)
+    VALUES (NULL, p_city_id, p_house_number, p_street, p_city, p_state);
+    SET new_address_id = LAST_INSERT_ID();
+    INSERT INTO User (user_id, user_name, email, name, password_hash, user_type, address_id)
+    VALUES (p_user_id, p_user_name, p_email, p_name, p_password_hash, p_user_type, new_address_id);
+END$$
+
+DROP PROCEDURE IF EXISTS `GetOrderSummary`$$
+CREATE PROCEDURE `GetOrderSummary`(IN p_user_id INT)
+BEGIN
+    SELECT o.order_id, o.order_date, o.total_amount, oi.quantity, oi.price,
+           p.product_name, v.variant_name, d.delivery_status
+    FROM orders o
+    JOIN order_item oi ON o.order_id = oi.order_id
+    LEFT JOIN variant v ON oi.variant_id = v.variant_id  
+    LEFT JOIN product p ON v.product_id = p.product_id
+    LEFT JOIN delivery d ON o.order_id = d.order_id
+    WHERE o.user_id = p_user_id
+    ORDER BY o.order_date DESC;
+END$$
+
+DROP PROCEDURE IF EXISTS `GetUserCart`$$
+CREATE PROCEDURE `GetUserCart`(IN p_user_id INT)
+BEGIN
+    SELECT c.cart_id, c.user_id, c.total_amount as cart_total,
+           ci.cart_item_id, ci.variant_id, ci.quantity,
+           v.variant_name, v.price, v.SKU, v.quantity as stock_available,
+           p.product_id, p.product_name, p.description, cat.category_name,
+           (ci.quantity * v.price) as item_total,
+           CASE 
+               WHEN v.quantity >= ci.quantity THEN 'In Stock'
+               WHEN v.quantity > 0 THEN 'Limited Stock'
+               ELSE 'Out of Stock'
+           END as stock_status
+    FROM cart c
+    LEFT JOIN cart_item ci ON c.cart_id = ci.cart_id
+    LEFT JOIN variant v ON ci.variant_id = v.variant_id
+    LEFT JOIN product p ON v.product_id = p.product_id
+    LEFT JOIN category cat ON p.category_id = cat.category_id
+    WHERE c.user_id = p_user_id
+    ORDER BY ci.cart_item_id DESC;
+END$$
+
+DELIMITER ;
+
+-- ============================================
+-- TRIGGERS (DEFINER removed)
+-- ============================================
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS `check_cvv_length`$$
+CREATE TRIGGER `check_cvv_length` BEFORE INSERT ON `card` FOR EACH ROW
+BEGIN
+    IF LENGTH(NEW.CVV) != 3 OR NEW.CVV REGEXP '[^0-9]' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'CVV must be exactly 3 digits';
+    END IF;
+END$$
+
+DROP TRIGGER IF EXISTS `set_default_delivery_status`$$
+CREATE TRIGGER `set_default_delivery_status` BEFORE INSERT ON `delivery` FOR EACH ROW
+BEGIN
+    IF NEW.delivery_status IS NULL THEN
+        SET NEW.delivery_status = 'Pending';
+    END IF;
+END$$
+
+DROP TRIGGER IF EXISTS `trg_check_email_before_insert`$$
+CREATE TRIGGER `trg_check_email_before_insert` BEFORE INSERT ON `user` FOR EACH ROW
+BEGIN
+    IF NEW.email NOT LIKE '%@%' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Please enter a valid email address. It must include the "@" symbol (e.g., name@example.com).';
+    END IF;
+END$$
+
+DROP TRIGGER IF EXISTS `check_variant_quantity`$$
+CREATE TRIGGER `check_variant_quantity` BEFORE UPDATE ON `variant` FOR EACH ROW
+BEGIN
+    IF NEW.quantity < 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Quantity cannot be negative';
+    END IF;
+END$$
+
+DROP TRIGGER IF EXISTS `prevent_negative_stock`$$
+CREATE TRIGGER `prevent_negative_stock` BEFORE UPDATE ON `variant` FOR EACH ROW
+BEGIN
+    IF NEW.quantity < 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Stock cannot be negative';
+    END IF;
+END$$
+
+DROP TRIGGER IF EXISTS `prevent_variant_delete_if_in_order`$$
+CREATE TRIGGER `prevent_variant_delete_if_in_order` BEFORE DELETE ON `variant` FOR EACH ROW
+BEGIN
+    IF EXISTS (SELECT 1 FROM order_item WHERE variant_id = OLD.variant_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Cannot delete variant: This variant is part of existing orders and cannot be removed.';
+    END IF;
+END$$
+
+DELIMITER ;
 
 
